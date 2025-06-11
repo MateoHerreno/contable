@@ -1,21 +1,14 @@
 
-from django.shortcuts import render,redirect
-from django.http import HttpResponse
 from rest_framework.response import Response
 from .models import*
-from rest_framework import viewsets
+from rest_framework import viewsets,status
 from . serializers import *
-from django.contrib import messages
-from .crypt import *
-from django.db import IntegrityError, transaction
 from django.core.mail import BadHeaderError, EmailMessage
-import datetime
-from django.utils.timezone import localtime
 from rest_framework.views import APIView
-import re
 import pytz
 est = pytz.timezone('America/Bogota')
-from .autorizacion import * 
+from .utils import generar_token, enviar_email_recuperacion
+
 # Create your views here.
 
 # API with rest framework
@@ -48,35 +41,25 @@ class CuentaPorCobrarViewSet(viewsets.ModelViewSet):
     queryset = CuentaPorCobrar.objects.all()
     serializer_class = CuentaPorCobrarSerializer
 
-
-#usuario desde api
-"""
-class RegistrarUsuario(APIView):
+class PasswordResetAPIView(APIView):
     def post(self, request):
-        print(request.data)
-        if request.method == "POST":
-            nombre = request.data["nombre"]
-            correo = request.data["correo"]
-            clave1 = request.data["password"]
-            clave2 = request.data["confirmPassword"]
-            nick = correo
-            if nombre == "" or correo == "" or clave1 == "" or clave2 == "":
-                return Response(data={'message': 'Todos los campos son obligatorios', 'respuesta': 400}, status=400)
-            elif not re.fullmatch(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', correo):
-                return Response(data={'message': 'El correo no es válido', 'respuesta': 400}, status=400)
-            elif clave1 != clave2:
-                return Response(data={'message': 'Las contraseñas no coinciden', 'respuesta': 400}, status=400)
-            else:
-                try:
-                    q = Usuario(
-                        nombre=nombre,
-                        email=correo,
-                        password=hash_password(clave1),
-                    )
-                    q.save()
-                except Exception as e:
-                    return Response(data={'message': 'El Usuario ya existe', 'respuesta': 409}, status=409)
+        serializer = PasswordResetSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"mensaje": "Contraseña actualizada correctamente."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # Renderiza la misma página de registro con los mensajes de error
-        return Response(data={'message': f'Usuario creado correctamente tu nick es: {nick}', 'respuesta': 201}, status=201)
-"""
+class SolicitudRecuperacionAPIView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        try:
+            usuario = Usuario.objects.get(email=email)
+        except Usuario.DoesNotExist:
+            return Response({'error': 'No existe un usuario con ese email.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        token = generar_token()
+        usuario.token_recuperar = token
+        usuario.save()
+        
+        enviar_email_recuperacion(usuario.email, token)
+        return Response({'mensaje': 'Token de recuperación enviado a tu email.'}, status=status.HTTP_200_OK)

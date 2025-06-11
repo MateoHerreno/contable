@@ -25,9 +25,11 @@ class EmpresaAdmin(admin.ModelAdmin):
 
 @admin.register(Tienda)
 class TiendaAdmin(admin.ModelAdmin):
-    list_display = ['nombre', 'direccion', 'ciudad', 'empresa', 'cantidad_empleados']
-    search_fields = ['nombre', 'empresa__nombre']
+    list_display = ['nombre', 'direccion', 'ciudad', 'empresa','cantidad_usuarios']
     ordering = ('id',)
+    def cantidad_usuarios(self, obj):
+        return obj.usuario_set.count()
+    cantidad_usuarios.short_description = 'Cantidad de Usuarios'
 
 @admin.register(Usuario)
 class UsuarioAdmin(admin.ModelAdmin):

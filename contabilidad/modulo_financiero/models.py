@@ -29,17 +29,17 @@ class Tienda(models.Model):
     direccion = models.CharField(max_length=200, blank=True, null=True)
     ciudad = models.CharField(max_length=100, blank=True, null=True)
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE)
-    cantidad_empleados = models.IntegerField(null = False, default=0)
-
+    
     def __str__(self):
         return self.nombre
 
+    def cantidad_usuarios(self):
+        return self.usuario_set.count()
+
 class Usuario(AbstractUser):
     username = None
-    is_superuser = None
     first_name = None
     last_name = None
-    is_staff = None
     groups = None
     nombre = models.CharField(max_length=254)
     email = models.EmailField(max_length=254, unique=True,blank=False,null=True)

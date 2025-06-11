@@ -55,7 +55,7 @@ class SolicitudRecuperacionAPIView(APIView):
         try:
             usuario = Usuario.objects.get(email=email)
         except Usuario.DoesNotExist:
-            return Response({'error': 'No existe un usuario con ese email.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'No existe un usuario con ese email, envia un post json- "email": "usuario@correo.com"  '}, status=status.HTTP_404_NOT_FOUND)
         
         token = generar_token()
         usuario.token_recuperar = token
@@ -63,3 +63,4 @@ class SolicitudRecuperacionAPIView(APIView):
         
         enviar_email_recuperacion(usuario.email, token)
         return Response({'mensaje': 'Token de recuperación enviado a tu email.'}, status=status.HTTP_200_OK)
+    

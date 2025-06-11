@@ -15,8 +15,8 @@ router.register(r'cuentas_por_cobrar', views. CuentaPorCobrarViewSet)
 
 urlpatterns = [
     path('api/', include(router.urls)),
-    path('passwordRequest/', SolicitudRecuperacionAPIView.as_view(), name='password-reset-request'), #este endpoint espera el mail registrado en usuario
-    path('passwordReset/', PasswordResetAPIView.as_view(), name='password-reset'),#este endpoint espera {"token":tokenenviado, "password":nuevo , "password2":confirmacion}
+    path('api/passwordRequest/', SolicitudRecuperacionAPIView.as_view(), name='password-reset-request'), 
+    path('api/passwordReset/', PasswordResetAPIView.as_view(), name='password-reset'),
 ]
 
 

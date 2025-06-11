@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import *
 
 class EmpresaSerializer(serializers.ModelSerializer):
+    perfiles = serializers.StringRelatedField(many=True)
     class Meta:
         model = Empresa
         fields = '__all__'
@@ -20,7 +21,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
         fields = [
-            'id', 'nombre', 'email', 'password','password2', 'telefono', 
+             'id','nombre', 'email', 'password','password2', 'telefono', 
             'is_active', 'tienda', 'rol'
         ]
         extra_kwargs = {
@@ -42,11 +43,18 @@ class UsuarioSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
+        validated_data.pop('password2')
         password = validated_data.pop('password')
         usuario = Usuario(**validated_data)
         usuario.set_password(password)
         usuario.save()
         return usuario
+
+    def validate_email(self, value):
+        usuario_actual = self.instance
+        if Usuario.objects.exclude(pk=usuario_actual.pk if usuario_actual else None).filter(email=value).exists():
+            raise serializers.ValidationError("Este correo ya está registrado por otro usuario.")
+        return value
 
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
@@ -60,8 +68,8 @@ class UsuarioSerializer(serializers.ModelSerializer):
 class PasswordResetSerializer(serializers.Serializer):
     email = serializers.EmailField()
     token_recuperar = serializers.CharField()
-    nueva_password = serializers.CharField(write_only=True)
-    confirmar_password = serializers.CharField(write_only=True)
+    nueva_password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    confirmar_password = serializers.CharField(write_only=True, style={'input_type': 'password'})
 
     def validate(self, data):
         if data['nueva_password'] != data['confirmar_password']:
@@ -79,7 +87,7 @@ class PasswordResetSerializer(serializers.Serializer):
             raise serializers.ValidationError("Email o token de recuperación inválido.")
 
         usuario.set_password(nueva_password)
-        usuario.token_recuperar = 0  # Limpia el token para generar despues otro
+        usuario.token_recuperar = 0  # Limpia el token
         usuario.save()
         return usuario
 

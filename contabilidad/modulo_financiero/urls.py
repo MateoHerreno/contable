@@ -4,7 +4,7 @@ from .import views
 from .views import *
 
 router = routers.DefaultRouter()
-
+router.register(r'perfiles', views.PerfilViewSet)
 router.register(r'empresas', views. EmpresaViewSet)
 router.register(r'tiendas', views. TiendaViewSet)
 router.register(r'usuarios', views. UsuarioViewSet)
@@ -15,8 +15,9 @@ router.register(r'cuentas_por_cobrar', views. CuentaPorCobrarViewSet)
 
 urlpatterns = [
     path('api/', include(router.urls)),
-    path('api/passwordRequest/', SolicitudRecuperacionAPIView.as_view(), name='password-reset-request'), 
-    path('api/passwordReset/', PasswordResetAPIView.as_view(), name='password-reset'),
+    path('api/passwordRequest/', SolicitudRecuperacionAPIView.as_view(), name='password-reset-request'), #peticion para cambiar contraseña
+    path('api/passwordReset/', PasswordResetAPIView.as_view(), name='password-reset'), # json para cambiar la contraseña
+    path('api/recalcular_saldos/', RecalcularSaldosClientesAPIView.as_view(), name='recalcular-saldos'),#post - dispara el calculo de saldos para guardarlos en la db clientes.saldo
 ]
 
 

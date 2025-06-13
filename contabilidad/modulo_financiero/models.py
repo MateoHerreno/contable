@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from .authentication import CustomUserManager
 from django.utils import timezone
+from django.core.validators import MinValueValidator
 
 class Perfil(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
@@ -22,7 +23,7 @@ class Empresa(models.Model):
     perfiles = models.ManyToManyField(Perfil, blank=True)
 
     def __str__(self):
-        return f"{self.nombre} - {[p.nombre for p in self.perfiles.all()]}"
+        return f"{self.nombre}"
     
 class Tienda(models.Model):
     nombre = models.CharField(max_length=100)
@@ -44,7 +45,7 @@ class Usuario(AbstractUser):
     nombre = models.CharField(max_length=254)
     email = models.EmailField(max_length=254, unique=True,blank=False,null=True)
     password = models.CharField(max_length=254,blank=False,null=True)
-    token_recuperar = models.CharField(max_length=254,blank=False,null=False,default=0)
+    token_recuperar = models.CharField(max_length=254,blank=False,null=False,default='sin cambios pendientes ')
     telefono =models.IntegerField(null=False,blank=True,default='0')
     is_active = models.BooleanField(default=True)
     tienda = models.ForeignKey(Tienda, on_delete=models.CASCADE, null=True, blank=True)
@@ -82,29 +83,29 @@ class CuentaPorPagar(models.Model):
     fecha = models.DateTimeField(default = timezone.now)
     n_cxp =  models.AutoField(primary_key=True)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
-    concepto = models.TextField(blank=True, null=True)
-    val_bruto = models.DecimalField(max_digits=15, decimal_places=2)
-    iva = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
-    neto_facturado = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
-    saldo_anterior = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
-    abonos = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
-    pendiente_por_pagar = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+    concepto = models.TextField(blank=False, null=False)
+    val_bruto = models.DecimalField(max_digits=15, decimal_places=2, validators=[MinValueValidator(0)])
+    iva = models.DecimalField(max_digits=15, decimal_places=2,default=0,validators=[MinValueValidator(0)] )
+    neto_facturado = models.DecimalField(max_digits=15, decimal_places=2,default=0,validators=[MinValueValidator(0)])
+    saldo_anterior = models.DecimalField(max_digits=15, decimal_places=2)
+    abonos = models.DecimalField(max_digits=15, decimal_places=2, default=0,validators=[MinValueValidator(0)])
+    pendiente_por_pagar = models.DecimalField(max_digits=15, decimal_places=2)
 
     def __str__(self):
         return f"{self.proveedor.nombre} - cxp:{self.n_cxp}"
 
 class CuentaPorCobrar(models.Model):
-    fecha = models.DateTimeField(default = timezone.now)
-    n_cxc =  models.AutoField(primary_key=True)
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    concepto = models.TextField(blank=True, null=True)
-    val_bruto = models.DecimalField(max_digits=15, decimal_places=2)
-    iva = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
-    retenciones = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
-    neto_facturado = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
-    saldo_anterior = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
-    abonos = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
-    pendiente_por_pagar = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+    fecha = models.DateTimeField(default=timezone.now)
+    n_cxc = models.AutoField(primary_key=True)
+    cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE)
+    concepto = models.TextField(blank=False, null=False)  # obligatorio
+    val_bruto = models.DecimalField(max_digits=15, decimal_places=2, validators=[MinValueValidator(0)])
+    iva = models.DecimalField(max_digits=15, decimal_places=2,default=0,validators=[MinValueValidator(0)] )
+    retenciones = models.DecimalField(max_digits=15, decimal_places=2,default=0,validators=[MinValueValidator(0)])
+    neto_facturado = models.DecimalField(max_digits=15, decimal_places=2,default=0,validators=[MinValueValidator(0)])
+    saldo_anterior = models.DecimalField(max_digits=15, decimal_places=2)
+    abonos = models.DecimalField(max_digits=15, decimal_places=2, default=0,validators=[MinValueValidator(0)])
+    pendiente_por_pagar = models.DecimalField(max_digits=15, decimal_places=2)
 
     def __str__(self):
         return f"{self.cliente.nombre} - cxc:{self.n_cxc}"

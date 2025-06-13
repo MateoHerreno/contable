@@ -7,11 +7,14 @@ from django.core.mail import BadHeaderError, EmailMessage
 from rest_framework.views import APIView
 import pytz
 est = pytz.timezone('America/Bogota')
-from .utils import generar_token, enviar_email_recuperacion
+from .utils import *
 
 # Create your views here.
 
 # API with rest framework
+class PerfilViewSet(viewsets.ModelViewSet):
+    queryset = Perfil.objects.all()
+    serializer_class = PerfilSerializer
 
 class EmpresaViewSet(viewsets.ModelViewSet):
     queryset = Empresa.objects.all()
@@ -63,4 +66,8 @@ class SolicitudRecuperacionAPIView(APIView):
         
         enviar_email_recuperacion(usuario.email, token)
         return Response({'mensaje': 'Token de recuperación enviado a tu email.'}, status=status.HTTP_200_OK)
-    
+
+class RecalcularSaldosClientesAPIView(APIView):
+    def post(self, request):
+        actualizar_saldos_clientes()
+        return Response({"mensaje": "Saldos de clientes actualizados correctamente."})

@@ -35,11 +35,6 @@ class TienePermiso:
 
     
 class NoEditarAdministradores(BasePermission):
-    """
-    Impide que:
-    - Un gerente (rol 2) edite o elimine a administradores (rol 1) o a otros gerentes.
-    - Un sprempleado (rol 3) edite o elimine a administradores, gerentes o otros sprempleados.
-    """
     def has_object_permission(self, request, view, obj):
         editor_rol = request.user.rol
         objetivo_rol = getattr(obj, 'rol', None)

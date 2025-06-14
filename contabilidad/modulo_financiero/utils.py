@@ -1,10 +1,13 @@
-import secrets
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 from django.core.mail import send_mail
 from django.db.models import Sum
+from django.http import FileResponse
 from .models import Cliente,Proveedor
-from django.db.models import Sum
+from io import BytesIO
+import secrets
 
-#funciones para recuperacion de tokens____________________________________________________________________________
+#funciones para recuperacion de contraseña por token_______________________________________________________________
 def generar_token():
     token = secrets.token_urlsafe(6)  # token ~8 caracteres
     token = token[:8]  # asegúrate de que tenga exactamente 8 
@@ -49,3 +52,56 @@ def format_decimal_humano(value):
         return f"{float(value):,.2f}"
     except (ValueError, TypeError):
         return value
+    
+#funcion para exportacion de pdfs______________________________________________________________________________________
+#desde cxc filtrando por clientes y fechas (un cliente en un periodo especifico, o si no trae cliente solo la fecha especifica)
+def generar_pdf_cxc(queryset, cliente=None):
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=letter)
+
+    if cliente:
+        titulo = f"Reporte CxC - Cliente: {cliente.nombre}"
+    else:
+        titulo = "Reporte Cuentas por Cobrar - General"
+
+    pdf.setTitle(titulo)
+    pdf.drawString(100, 750, titulo)
+    pdf.drawString(100, 735, f"Total de cuentas: {queryset.count()}")
+
+    y = 700
+    for cuenta in queryset:
+        pdf.drawString(100, y, f"{cuenta.fecha.strftime('%Y-%m-%d')} | Cliente {cuenta.cliente.nombre} | {cuenta.concepto} | ${cuenta.pendiente_por_pagar:,.0f}")
+        y -= 15
+        if y < 50:
+            pdf.showPage()
+            y = 750
+
+    pdf.save()
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename='cxc_general.pdf')
+
+#desde cxp filtrando por fechac y proveedor (si no trae cliente deve traer fecha especifica)
+def generar_pdf_cxp(queryset, proveedor=None):
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=letter)
+
+    if proveedor:
+        titulo = f"Reporte CxP - Proveedor: {proveedor.nombre}"
+    else:
+        titulo = "Reporte Cuentas por Pagar - General"
+
+    pdf.setTitle(titulo)
+    pdf.drawString(100, 750, titulo)
+    pdf.drawString(100, 735, f"Total de cuentas: {queryset.count()}")
+
+    y = 700
+    for cuenta in queryset:
+        pdf.drawString(100, y, f"{cuenta.fecha.strftime('%Y-%m-%d')} | {cuenta.concepto} | ${cuenta.pendiente_por_pagar:,.0f}")
+        y -= 15
+        if y < 50:
+            pdf.showPage()
+            y = 750
+
+    pdf.save()
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename='cxp_proveedor.pdf')

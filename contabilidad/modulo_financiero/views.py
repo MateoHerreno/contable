@@ -189,3 +189,89 @@ class RecalcularSaldosAPIView(APIView):
             "mensaje": "Saldos de clientes y proveedores actualizados correctamente."
         })
     
+class ExportarCxCPorFechaAPIView(APIView):
+
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_cxc_fecha')]
+
+    def get(self, request):
+        fecha_inicio = request.query_params.get('desde')
+        fecha_fin = request.query_params.get('hasta')
+
+        if not fecha_inicio or not fecha_fin:
+            return Response({'error': 'Debe especificar "desde" y "hasta".'}, status=400)
+
+        cuentas = CuentaPorCobrar.objects.filter(fecha__range=[fecha_inicio, fecha_fin]).order_by('fecha')
+
+        if not cuentas.exists():
+            return Response({'error': 'No se encontraron cuentas en el rango indicado.'}, status=404)
+
+        return generar_pdf_cxc(cuentas, cliente=None)
+    
+class ExportarCxCPorClienteYFechaAPIView(APIView):
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_cxc_cliente_fecha')]
+
+    def get(self, request):
+        cliente_id = request.query_params.get('cliente')
+        fecha_inicio = request.query_params.get('desde')
+        fecha_fin = request.query_params.get('hasta')
+
+        if not cliente_id or not fecha_inicio or not fecha_fin:
+            return Response({'error': 'Debe especificar cliente, desde y hasta.'}, status=400)
+
+        cliente = Cliente.objects.filter(id=cliente_id).first()
+        if not cliente:
+            return Response({'error': 'Cliente no encontrado.'}, status=404)
+
+        cuentas = CuentaPorCobrar.objects.filter(
+            cliente=cliente,
+            fecha__range=[fecha_inicio, fecha_fin]
+        ).order_by('fecha')
+
+        if not cuentas.exists():
+            return Response({'error': 'No se encontraron cuentas para el cliente en el rango indicado.'}, status=404)
+
+        return generar_pdf_cxc(cuentas, cliente)
+    
+class ExportarCxPPorProveedorYFechaAPIView(APIView):
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_cxp_proveedor_fecha')]
+
+    def get(self, request):
+        proveedor_id = request.query_params.get('proveedor')
+        fecha_inicio = request.query_params.get('desde')
+        fecha_fin = request.query_params.get('hasta')
+
+        if not proveedor_id or not fecha_inicio or not fecha_fin:
+            return Response({'error': 'Debe especificar proveedor, desde y hasta.'}, status=400)
+
+        proveedor = Proveedor.objects.filter(id=proveedor_id).first()
+        if not proveedor:
+            return Response({'error': 'Proveedor no encontrado.'}, status=404)
+
+        cuentas = CuentaPorPagar.objects.filter(
+            proveedor=proveedor,
+            fecha__range=[fecha_inicio, fecha_fin]
+        ).order_by('fecha')
+
+        if not cuentas.exists():
+            return Response({'error': 'No se encontraron cuentas para el proveedor en el rango indicado.'}, status=404)
+
+        return generar_pdf_cxp(cuentas, proveedor)
+    
+class ExportarCxPPorFechaAPIView(APIView):
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_cxp_fecha')]
+
+    def get(self, request):
+        fecha_inicio = request.query_params.get('desde')
+        fecha_fin = request.query_params.get('hasta')
+
+        if not fecha_inicio or not fecha_fin:
+            return Response({'error': 'Debe especificar "desde" y "hasta".'}, status=400)
+
+        cuentas = CuentaPorPagar.objects.filter(
+            fecha__range=[fecha_inicio, fecha_fin]
+        ).order_by('fecha')
+
+        if not cuentas.exists():
+            return Response({'error': 'No se encontraron cuentas por pagar en el rango indicado.'}, status=404)
+
+        return generar_pdf_cxp(cuentas, proveedor=None)

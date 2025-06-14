@@ -50,9 +50,9 @@ class Usuario(AbstractUser):
     is_active = models.BooleanField(default=True)
     tienda = models.ForeignKey(Tienda, on_delete=models.CASCADE, null=True, blank=True)
     ROLES = (
-        (1, "administrador"),
+        (1, "admin"),
         (2, "gerente"),
-        (3, "super_empleado"),
+        (3, "sprempleado"),
         (4, "empleado"), 
     )
     rol=models.IntegerField(choices=ROLES,default=4)

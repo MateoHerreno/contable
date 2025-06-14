@@ -1,7 +1,7 @@
 import secrets
 from django.core.mail import send_mail
 from django.db.models import Sum
-from .models import Cliente
+from .models import Cliente,Proveedor
 from django.db.models import Sum
 
 #funciones para recuperacion de tokens____________________________________________________________________________
@@ -26,14 +26,24 @@ def enviar_email_recuperacion(email, token):
     send_mail(asunto, mensaje, from_email, recipient_list)
 
 #funciones relacionadas con cuentas por cobrar y clientes________________________________________________________
-def actualizar_saldos_clientes():
+# Actualizar saldos de clientes
+def actualizar_saldos():
+    # Actualizar saldos de clientes
     for cliente in Cliente.objects.all():
         total = cliente.cuentaporcobrar_set.aggregate(
             total=Sum('pendiente_por_pagar')
         )['total'] or 0
         cliente.saldo = total
         cliente.save()
-    #en esta funcion se organizan los numeros para un formato mas legible al devolverlos en la api
+
+    # Actualizar saldos de proveedores
+    for proveedor in Proveedor.objects.all():
+        total = proveedor.cuentaporpagar_set.aggregate(
+            total=Sum('pendiente_por_pagar')
+        )['total'] or 0
+        proveedor.saldo = total
+        proveedor.save()
+#en esta funcion se organizan los numeros para un formato mas legible al devolverlos en la api
 def format_decimal_humano(value):
     try:
         return f"{float(value):,.2f}"

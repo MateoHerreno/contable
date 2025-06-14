@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import *
 from decimal import Decimal, ROUND_HALF_UP
-from django.utils import timezone
 from django.db.models import Sum
 from .utils import*
 

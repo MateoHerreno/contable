@@ -29,7 +29,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
         fields = [
-             'id','nombre', 'email', 'password','password2', 'telefono', 
+            'id', 'nombre', 'email', 'password', 'password2', 'telefono',
             'is_active', 'tienda', 'rol'
         ]
         extra_kwargs = {
@@ -50,26 +50,46 @@ class UsuarioSerializer(serializers.ModelSerializer):
             })
         return data
 
-    def create(self, validated_data):
-        validated_data.pop('password2')
-        password = validated_data.pop('password')
-        usuario = Usuario(**validated_data)
-        usuario.set_password(password)
-        usuario.save()
-        return usuario
-
     def validate_email(self, value):
         usuario_actual = self.instance
         if Usuario.objects.exclude(pk=usuario_actual.pk if usuario_actual else None).filter(email=value).exists():
             raise serializers.ValidationError("Este correo ya está registrado por otro usuario.")
         return value
 
+    def validate_rol(self, value):
+        request = self.context.get('request')
+        if request and hasattr(request.user, 'rol'):
+            if value < request.user.rol:
+                raise serializers.ValidationError("No puedes asignar un rol superior al tuyo.")
+        return value
+
+    def create(self, validated_data):
+        validated_data.pop('password2')
+        password = validated_data.pop('password')
+        usuario = Usuario(**validated_data)
+        usuario.set_password(password)
+
+        # Seguridad extra: pasa el usuario autenticado al modelo
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            usuario._modificado_por = request.user
+
+        usuario.save()
+        return usuario
+
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+
         if password:
             instance.set_password(password)
+
+        # Seguridad extra: pasa el usuario autenticado al modelo
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            instance._modificado_por = request.user
+
         instance.save()
         return instance
 

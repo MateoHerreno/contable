@@ -23,8 +23,32 @@ schema_view = get_schema_view(
 
 # API con rest framework
 class PerfilViewSet(viewsets.ModelViewSet):
-    queryset = Perfil.objects.all()
+    queryset = Perfil.objects.all()  # Necesario para que router registre automáticamente
     serializer_class = PerfilSerializer
+
+    def get_queryset(self):
+        # Aplica seguridad jerárquica basada en roles
+        return filtrar_queryset_por_rol(
+            super().get_queryset(),
+            self.request.user,
+            campo_rol='rol',
+            prefijo='usuario__'  # Perfil → Usuario
+        )
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [TienePermiso('create_usuario')()]
+        elif self.action in ['update', 'partial_update']:
+            return [
+                TienePermiso('update_usuario')(),
+                NoEditarAdministradores()
+            ]
+        elif self.action == 'destroy':
+            return [
+                TienePermiso('delete_usuario')(),
+                NoEditarAdministradores()
+            ]
+        return [TienePermiso('read_usuario')()]
 
 class EmpresaViewSet(viewsets.ModelViewSet):
     queryset = Empresa.objects.all()
@@ -56,13 +80,27 @@ class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
 
+    def get_queryset(self):
+        # Solo ver usuarios de rol inferior
+        return filtrar_queryset_por_rol(
+            super().get_queryset(),
+            self.request.user,
+            campo_rol='rol'  # Usuario.rol directamente
+        )
+
     def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_usuario')()]
         elif self.action in ['update', 'partial_update']:
-            return [TienePermiso('update_usuario')(), NoEditarAdministradores()]#un gerente no puede editar un admin
+            return [
+                TienePermiso('update_usuario')(),
+                NoEditarAdministradores()
+            ]
         elif self.action == 'destroy':
-            return [TienePermiso('delete_usuario')()]
+            return [
+                TienePermiso('delete_usuario')(),
+                NoEditarAdministradores()
+            ]
         return [TienePermiso('read_usuario')()]
 
 class ProveedorViewSet(viewsets.ModelViewSet):

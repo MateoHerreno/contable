@@ -25,7 +25,7 @@ class EmpresaAdmin(admin.ModelAdmin):
 
 @admin.register(Tienda)
 class TiendaAdmin(admin.ModelAdmin):
-    list_display = ['nombre', 'direccion', 'ciudad', 'empresa','cantidad_usuarios']
+    list_display = ['id','nombre', 'direccion', 'ciudad', 'empresa','cantidad_usuarios']
     ordering = ('id',)
     def cantidad_usuarios(self, obj):
         return obj.usuario_set.count()
@@ -61,3 +61,9 @@ class CuentaPorCobrarAdmin(admin.ModelAdmin):
     list_display = ['n_cxc', 'cliente', 'fecha', 'val_bruto', 'pendiente_por_pagar']
     search_fields = ['n_cxc', 'cliente__nombre']
     ordering = ('fecha','cliente')
+
+@admin.register(PermisoPersonalizado)
+class PermisoPersonalizadoAdmin(admin.ModelAdmin):
+    list_display = ('accion', 'admin', 'gerente', 'sprempleado', 'empleado')
+    list_editable = ('admin', 'gerente', 'sprempleado', 'empleado')
+    search_fields = ('accion',)

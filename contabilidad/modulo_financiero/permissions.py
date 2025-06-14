@@ -1,45 +1,7 @@
 from rest_framework.permissions import BasePermission
+from modulo_financiero.models import PermisoPersonalizado
 
-PERMISOS = {
-    'create_usuario':   {'empleado':False , 'sprempleado':False, 'gerente':False, 'admin':True },
-    'read_usuario':     {'empleado':False , 'sprempleado':False, 'gerente':True , 'admin':True },
-    'update_usuario':   {'empleado':False , 'sprempleado':False, 'gerente':True , 'admin':True },
-    'delete_usuario':   {'empleado':False , 'sprempleado':False, 'gerente':False, 'admin':True },
-        
-    'create_empresa':   {'empleado':False , 'sprempleado':False, 'gerente':False, 'admin':True },
-    'read_empresa':     {'empleado':False , 'sprempleado':False, 'gerente':True , 'admin':True },
-    'update_empresa':   {'empleado':False , 'sprempleado':True , 'gerente':True , 'admin':True },
-    'delete_empresa':   {'empleado':False , 'sprempleado':False, 'gerente':False, 'admin':True },
-    
-    'create_tienda':    {'empleado':False , 'sprempleado':False, 'gerente':True , 'admin':True },
-    'read_tienda':      {'empleado':False , 'sprempleado':True , 'gerente':True , 'admin':True },
-    'update_tienda':    {'empleado':False , 'sprempleado':True , 'gerente':True , 'admin':True },
-    'delete_tienda':    {'empleado':False , 'sprempleado':False, 'gerente':True , 'admin':True },
-    
-    'create_cliente':   {'empleado':False , 'sprempleado':True , 'gerente':True , 'admin':True },
-    'read_cliente':     {'empleado':False , 'sprempleado':True , 'gerente':True , 'admin':True },
-    'update_cliente':   {'empleado':False , 'sprempleado':True , 'gerente':True , 'admin':True },
-    'delete_cliente':   {'empleado':False , 'sprempleado':False, 'gerente':False, 'admin':True },
-
-    'create_proveedor': {'empleado':False , 'sprempleado':True , 'gerente':True , 'admin':True },
-    'read_proveedor':   {'empleado':False , 'sprempleado':True , 'gerente':True , 'admin':True },
-    'update_proveedor': {'empleado':False , 'sprempleado':True , 'gerente':True , 'admin':True },
-    'delete_proveedor': {'empleado':False , 'sprempleado':False, 'gerente':False, 'admin':True },
-    
-    'create_cxc':       {'empleado':True  , 'sprempleado':True , 'gerente':True , 'admin':True },
-    'read_cxc':         {'empleado':False , 'sprempleado':True , 'gerente':True , 'admin':True },
-    'update_cxc':       {'empleado':False , 'sprempleado':True , 'gerente':True , 'admin':True },
-    'delete_cxc':       {'empleado':False , 'sprempleado':False, 'gerente':False, 'admin':True },
-
-    'create_cxp':       {'empleado':True  , 'sprempleado':True , 'gerente':True , 'admin':True },
-    'read_cxp':         {'empleado':False , 'sprempleado':True , 'gerente':True , 'admin':True },
-    'update_cxp':       {'empleado':False , 'sprempleado':True , 'gerente':True , 'admin':True },
-    'delete_cxp':       {'empleado':False , 'sprempleado':False, 'gerente':False, 'admin':True },
-
-    'recalcular_saldos':{'empleado':False , 'sprempleado':True , 'gerente':True , 'admin':True },
-
-}
-
+# Mapeo de número de rol al nombre usado en la tabla
 ROLES = {
     1: 'admin',
     2: 'gerente',
@@ -47,24 +9,67 @@ ROLES = {
     4: 'empleado',
 }
 
-def TienePermiso(accion):
-    class _TienePermisoInterno(BasePermission):
-        def has_permission(self, request, view):
-            if not request.user.is_authenticated:
-                return False
+class TienePermiso:
+    def __init__(self, accion):
+        self.accion = accion
 
-            rol_nombre = ROLES.get(request.user.rol)
-            if not rol_nombre:
-                return False
+    def __call__(self):
+        class _Permiso(BasePermission):
+            def has_permission(inner_self, request, view):
+                if not request.user.is_authenticated:
+                    return False
 
-            reglas = PERMISOS.get(accion)
-            if not reglas:
-                return False
+                rol_nombre = ROLES.get(request.user.rol)
+                if not rol_nombre:
+                    return False
 
-            return reglas.get(rol_nombre, False)
-    return _TienePermisoInterno
+                try:
+                    permiso = PermisoPersonalizado.objects.get(accion=self.accion)
+                    return getattr(permiso, rol_nombre, False)
+                except PermisoPersonalizado.DoesNotExist:
+                    return False
 
+        return _Permiso()
+
+
+
+    
 class NoEditarAdministradores(BasePermission):
+    """
+    Impide que:
+    - Un gerente (rol 2) edite o elimine a administradores (rol 1) o a otros gerentes.
+    - Un sprempleado (rol 3) edite o elimine a administradores, gerentes o otros sprempleados.
+    """
     def has_object_permission(self, request, view, obj):
-        # Si el usuario actual es gerente y el objeto es un admin, no permitir
-        return not (request.user.rol == 2 and getattr(obj, 'rol', None) == 1)
+        editor_rol = request.user.rol
+        objetivo_rol = getattr(obj, 'rol', None)
+
+        if editor_rol == 2:  # gerente
+            return objetivo_rol not in [1, 2]
+
+        if editor_rol == 3:  # sprempleado
+            return objetivo_rol not in [1, 2, 3]
+        
+        if editor_rol == 4:  # empleado
+            return objetivo_rol not in [1, 2, 3, 4]
+
+        return True
+
+def filtrar_queryset_por_rol(queryset, user, campo_rol='rol', prefijo=''):
+    """
+    Filtra un queryset excluyendo objetos relacionados a usuarios de rol superior.
+    Parámetros:
+    - queryset: el queryset a filtrar (ej: Usuario.objects.all())
+    - user: el usuario autenticado (request.user)
+    - campo_rol: nombre del campo que representa el rol
+    - prefijo: usado para relaciones (ej: 'usuario__' para Perfil)
+    """
+    if user.rol == 1:
+        return queryset
+    elif user.rol == 2:
+        return queryset.exclude(**{f"{prefijo}{campo_rol}": 1})
+    elif user.rol == 3:
+        return queryset.exclude(**{f"{prefijo}{campo_rol}__in": [1, 2]})
+    elif user.rol == 4:
+        return queryset.exclude(**{f"{prefijo}{campo_rol}__in": [1, 2, 3]})
+    return queryset.none()

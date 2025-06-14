@@ -8,8 +8,14 @@ la cxc y cxp? para hacer que el empleado obserbe bien los campos al enviarlos
 
 -hay un endpoint de recalcular saldos para guardar los saldos actuales de proveedores y clientes
 
+-para las descargas de pdf de cxc y cxp, se deven manejar las agrupaciones de fechas desde el frontend hay dos endpoints por cada 
+    provedores-fecha, fecha todas
+    clientes-fecha, fecha todas
 
 empleado@empleado.com : 123456789
 admin@admin.com : 123456
 sprempleado@empleado.com : 123456789
 gerente@gerente.com : 123456789
+
+falta el estres reunion por cuadrar; falta el perfilamiento general principal que se guarda en empresa (gasts fijos punto equilibrio etc) para empezar a
+modelar el frontend con el primo, bitacoras, plan de trabajo para dili

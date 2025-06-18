@@ -83,3 +83,39 @@ class PermisoPersonalizadoAdmin(admin.ModelAdmin):
 class NotaCreditoAdmin(admin.ModelAdmin):
     list_display = ['id', 'cuenta', 'creada']
     search_fields = ['descripcion', 'cuenta__cliente__nombre']
+
+@admin.register(EstadoResultadosMensual)
+class EstadoResultadosMensualAdmin(admin.ModelAdmin):
+    list_display = ('anio', 'mes', 'ingresos_total', 'utilidad_neta', 'creado')
+    list_filter = ('anio', 'mes')
+    ordering = ('-anio', '-mes')
+    readonly_fields = (
+        'anio', 'mes', 'ingresos_total', 'costos_operacion_total',
+        'utilidad_bruta', 'gastos_administrativos_total',
+        'utilidad_operacional', 'otros_costos_total',
+        'utilidad_antes_impuestos', 'gastos_impuestos', 'utilidad_neta',
+        'ingresos_detalle', 'costos_operacion_detalle',
+        'gastos_administrativos_detalle', 'otros_costos_detalle',
+        'impuestos_detalle', 'creado'
+    )
+    search_fields = ('anio', 'mes')
+    fieldsets = (
+        ('Periodo', {
+            'fields': ('anio', 'mes', 'creado')
+        }),
+        ('Totales', {
+            'fields': (
+                'ingresos_total', 'costos_operacion_total', 'utilidad_bruta',
+                'gastos_administrativos_total', 'utilidad_operacional',
+                'otros_costos_total', 'utilidad_antes_impuestos',
+                'gastos_impuestos', 'utilidad_neta',
+            )
+        }),
+        ('Detalles agrupados (JSON)', {
+            'fields': (
+                'ingresos_detalle', 'costos_operacion_detalle',
+                'gastos_administrativos_detalle', 'otros_costos_detalle',
+                'impuestos_detalle'
+            )
+        }),
+    )

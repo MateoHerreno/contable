@@ -94,6 +94,7 @@ AUTH_USER_MODEL = "modulo_financiero.Usuario"
 AUTH_PROFILE_MODULE = "modulo_financiero.Usuario"
 
 #login requerido o no!
+"""
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',  # Por defecto requiere estar logueado
@@ -110,7 +111,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ),
 }
-"""
+
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

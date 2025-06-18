@@ -1,0 +1,193 @@
+peticion cambiar contraseña
+    post - http://127.0.0.1:8000/api/passwordRequest/
+    {
+        "email":"admin@admin.com"
+    }
+
+cambiar contraseña
+    post - http://127.0.0.1:8000/api/passwordReset/
+    {
+    "email": "admin@admin.com",
+    "token_recuperar": "seRk-3s74",
+    "nueva_password": "123456789",
+    "confirmar_password": "123456789"
+    }
+
+solicitar token acces login
+    post - http://127.0.0.1:8000/api/token/
+        body:
+            {
+            "email": "admin@admin.com",
+            "password": "123456"
+            }
+
+refresch token para un nuevo acces
+    post - http://127.0.0.1:8000/api/refresh/
+        body:
+            {
+            "refresh": ""
+            }
+
+            ______________________________
+            de aca en adelante todos nesesitan headers
+            Contet-Type    application/json
+            Authorization  az token...
+            ______________________________
+
+
+Empresas
+    -ver todas
+    get - http://127.0.0.1:8000/api/empresas/
+    -ver una
+    get- http://127.0.0.1:8000/api/empresas/_id
+    -eliminar una 
+    delete - http://127.0.0.1:8000/api/empresas/_id
+
+    -crear 
+    post - http://127.0.0.1:8000/api/empresas/
+    -editar 
+    put/patch - http://127.0.0.1:8000/api/empresas/_id
+        body:
+            {
+            "perfiles": [1,2,3],
+            "nombre": "empresaejemplo",
+            "nit": 123456,
+            "telefono": "123456"
+            }
+       
+
+Tiendas
+    -ver todas
+    get - http://127.0.0.1:8000/api/tiendas/
+    -ver una
+    get- http://127.0.0.1:8000/api/tiendas/_id
+    -eliminar una 
+    delete - http://127.0.0.1:8000/api/tiendas/_id
+
+    -crear 
+    post - http://127.0.0.1:8000/api/tiendas/
+    -editar 
+    put/patch - http://127.0.0.1:8000/api/tiendas/_id
+        body:
+            {
+                "nombre": "tiendaejemplo",
+                "direccion": "calle 56",
+                "ciudad": "manizales",
+                "empresa": 1
+            }
+
+Usuarios
+    -ver todas
+    get - http://127.0.0.1:8000/api/usuarios/
+    -ver una
+    get- http://127.0.0.1:8000/api/usuarios/_id
+    -eliminar una 
+    delete - http://127.0.0.1:8000/api/usuarios/_id
+
+    -crear 
+    post - http://127.0.0.1:8000/api/usuarios/
+    -editar 
+    put/patch - http://127.0.0.1:8000/api/usuarios/_id
+        {
+            "nombre": "usuario prueba",
+            "email": "usuario@ousuario.xyz",
+            "password": "123456",
+            "password2": "123456",
+            "telefono": 123456,
+            "is_active": true,
+            "tienda": 1l,
+            "rol": 4
+        }
+
+Proveedores
+    -ver todas
+    get - http://127.0.0.1:8000/api/proveedores/
+    -ver una
+    get- http://127.0.0.1:8000/api/pr|oveedores/_id
+    -eliminar una 
+    delete - http://127.0.0.1:8000/api/proveedores/_id
+
+    -crear 
+    post - http://127.0.0.1:8000/api/proveedores/
+    -editar 
+    put/patch - http://127.0.0.1:8000/api/proveedores/_id
+       {
+            "nombre": "prueba",
+            "nit": 123456,
+            "telefono": "123456"
+        }
+
+Clientes
+    -ver todas
+    get - http://127.0.0.1:8000/api/clientes/
+    -ver una
+    get- http://127.0.0.1:8000/api/clientes/_id
+    -eliminar una 
+    delete - http://127.0.0.1:8000/api/clientes/_id
+
+    -crear 
+    post - http://127.0.0.1:8000/api/clientes/
+    -editar 
+    put/patch - http://127.0.0.1:8000/api/clientes/_id
+       {
+            "nombre": "prueba",
+            "nit": 123456,
+            "telefono": "123456"
+        }
+
+cuentas por pagar
+     -ver todas
+    get - http://127.0.0.1:8000/api/cxp/
+    -ver una
+    get- http://127.0.0.1:8000/api/cxp/_id
+    -eliminar una 
+    delete - http://127.0.0.1:8000/api/cxp/_id
+
+    -crear 
+    post - http://127.0.0.1:8000/api/cxp/
+    -editar 
+    put/patch - http://127.0.0.1:8000/api/cxp/_id
+       {
+            "conceptoDetalle": "sillas",
+            "val_bruto":15000,
+            "abonos": 15000,
+            "proveedor": 1,
+            "conceptoFijo": 5
+        }
+
+cuentas por cobrar
+     -ver todas
+    get - http://127.0.0.1:8000/api/cxc/
+    -ver una
+    get- http://127.0.0.1:8000/api/cxc/_id
+    -eliminar una 
+    delete - http://127.0.0.1:8000/api/cxc/_id
+
+    -crear 
+    post - http://127.0.0.1:8000/api/cxc/
+    -editar 
+    put/patch - http://127.0.0.1:8000/api/cxc/_id
+       {
+            "descripcion_nota_credito": "si el val bruto es negativo",
+            "conceptoDetalle": " devolucion",
+            "val_bruto": -1500,
+            "iva": 0,
+            "retenciones": 0,
+            "abonos": 0,
+            "cliente": 1,
+            "conceptoFijo": 1
+        }
+
+nota credito
+     -ver todas
+    get - http://127.0.0.1:8000/api/notacredito/
+    -ver una
+    get- http://127.0.0.1:8000/api/notacredito/_id
+    -eliminar una 
+    delete - http://127.0.0.1:8000/api/notacredito/_id
+
+sincronizarsaldos cliente proveedor con cuentas cobrar-pagar en clientes
+    post -http://127.0.0.1:8000/api/calcusaldos/
+
+consultar estado de resultados
+    get - http://127.0.0.1:8000/api/estres/

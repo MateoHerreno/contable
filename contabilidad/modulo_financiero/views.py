@@ -33,16 +33,8 @@ class PerfilViewSet(viewsets.ModelViewSet):
     queryset = Perfil.objects.all()  # Necesario para que router registre automáticamente
     serializer_class = PerfilSerializer
 
-    def get_queryset(self):
-        # Aplica seguridad jerárquica basada en roles
-        return filtrar_queryset_por_rol(
-            super().get_queryset(),
-            self.request.user,
-            campo_rol='rol',
-            prefijo='usuario__'  # Perfil → Usuario
-        )
 
-    def get_permissions(self):
+    """def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_usuario')()]
         elif self.action in ['update', 'partial_update']:
@@ -55,13 +47,13 @@ class PerfilViewSet(viewsets.ModelViewSet):
                 TienePermiso('delete_usuario')(),
                 NoEditarAdministradores()
             ]
-        return [TienePermiso('read_usuario')()]
+        return [TienePermiso('read_usuario')()]"""
 
 class EmpresaViewSet(viewsets.ModelViewSet):
     queryset = Empresa.objects.all()
     serializer_class = EmpresaSerializer
 
-    def get_permissions(self):
+    """def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_empresa')()]
         elif self.action in ['update', 'partial_update']:
@@ -69,25 +61,25 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         elif self.action == 'destroy':
             return [TienePermiso('delete_empresa')()]
         return [TienePermiso('read_empresa')()]
-
+"""
 class TiendaViewSet(viewsets.ModelViewSet):
     queryset = Tienda.objects.all()
     serializer_class = TiendaSerializer
 
-    def get_permissions(self):
+    """def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_tienda')()]
         elif self.action in ['update', 'partial_update']:
             return [TienePermiso('update_tienda')()]
         elif self.action == 'destroy':
             return [TienePermiso('delete_tienda')()]
-        return [TienePermiso('read_tienda')()]
+        return [TienePermiso('read_tienda')()]"""
 
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
 
-    def get_queryset(self):
+    """def get_queryset(self):
         # Solo ver usuarios de rol inferior
         return filtrar_queryset_por_rol(
             super().get_queryset(),
@@ -108,98 +100,98 @@ class UsuarioViewSet(viewsets.ModelViewSet):
                 TienePermiso('delete_usuario')(),
                 NoEditarAdministradores()
             ]
-        return [TienePermiso('read_usuario')()]
+        return [TienePermiso('read_usuario')()]"""
 
 class ProveedorViewSet(viewsets.ModelViewSet):
     queryset = Proveedor.objects.all()
     serializer_class = ProveedorSerializer
 
-    def get_permissions(self):
+    """def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_proveedor')()]
         elif self.action in ['update', 'partial_update']:
             return [TienePermiso('update_proveedor')()]
         elif self.action == 'destroy':
             return [TienePermiso('delete_proveedor')()]
-        return [TienePermiso('read_proveedor')()]
+        return [TienePermiso('read_proveedor')()]"""
 
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.all()
     serializer_class = ClienteSerializer
 
-    def get_permissions(self):
+    """def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_cliente')()]
         elif self.action in ['update', 'partial_update']:
             return [TienePermiso('update_cliente')()]
         elif self.action == 'destroy':
             return [TienePermiso('delete_cliente')()]
-        return [TienePermiso('read_cliente')()]
+        return [TienePermiso('read_cliente')()]"""
 
 class ConceptoCXPViewSet(viewsets.ModelViewSet):
     queryset = ConceptoCXP.objects.all()
     serializer_class = ConceptoCXPSerializer
 
-    def get_permissions(self):
+    """def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_conceptocxp')()]
         elif self.action in ['update', 'partial_update']:
             return [TienePermiso('update_conceptocxp')()]
         elif self.action == 'destroy':
             return [TienePermiso('delete_conceptocxp')()]
-        return [TienePermiso('read_conceptocxp')()]
+        return [TienePermiso('read_conceptocxp')()]"""
 
 class ConceptoCXCViewSet(viewsets.ModelViewSet):
     queryset = ConceptoCXC.objects.all()
     serializer_class = ConceptoCXCSerializer
 
-    def get_permissions(self):
+    """def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_conceptocxc')()]
         elif self.action in ['update', 'partial_update']:
             return [TienePermiso('update_conceptocxc')()]
         elif self.action == 'destroy':
             return [TienePermiso('delete_conceptocxc')()]
-        return [TienePermiso('read_conceptocxc')()]
+        return [TienePermiso('read_conceptocxc')()]"""
 
 class CuentaPorPagarViewSet(viewsets.ModelViewSet):
     queryset = CuentaPorPagar.objects.all()
     serializer_class = CuentaPorPagarSerializer
 
-    def get_permissions(self):
+    """def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_cxp')()]
         elif self.action in ['update', 'partial_update']:
             return [TienePermiso('update_cxp')()]
         elif self.action == 'destroy':
             return [TienePermiso('delete_cxp')()]
-        return [TienePermiso('read_cxp')()]
+        return [TienePermiso('read_cxp')()]"""
 
 class CuentaPorCobrarViewSet(viewsets.ModelViewSet):
     queryset = CuentaPorCobrar.objects.all()
     serializer_class = CuentaPorCobrarSerializer
 
-    def get_permissions(self):
+    """def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_cxc')()]
         elif self.action in ['update', 'partial_update']:
             return [TienePermiso('update_cxc')()]
         elif self.action == 'destroy':
             return [TienePermiso('delete_cxc')()]
-        return [TienePermiso('read_cxc')()]
+        return [TienePermiso('read_cxc')()]"""
 
 class NotaCreditoViewSet(viewsets.ModelViewSet):
     queryset = NotaCredito.objects.select_related('cuenta').all()
     serializer_class = NotaCreditoSerializer
 
-    def get_permissions(self):
+    """def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_notacredito')()]
         elif self.action in ['update', 'partial_update']:
             return [TienePermiso('update_notacredito')()]
         elif self.action == 'destroy':
             return [TienePermiso('delete_notacredito')()]
-        return [TienePermiso('read_notacredito')()]
+        return [TienePermiso('read_notacredito')()]"""
 
 class PasswordResetAPIView(APIView):
     permission_classes = [AllowAny]
@@ -227,7 +219,7 @@ class SolicitudRecuperacionAPIView(APIView):
         return Response({'mensaje': 'Token de recuperación enviado a tu email.'}, status=status.HTTP_200_OK)
 
 class RecalcularSaldosAPIView(APIView):
-    permission_classes = [IsAuthenticated, TienePermiso('recalcular_saldos')]
+    #permission_classes = [IsAuthenticated, TienePermiso('recalcular_saldos')]
 
     def post(self, request):
         actualizar_saldos()
@@ -237,7 +229,7 @@ class RecalcularSaldosAPIView(APIView):
     
 class ExportarCxCPorFechaAPIView(APIView):
 
-    permission_classes = [IsAuthenticated, TienePermiso('exportar_cxc_fecha')]
+    #permission_classes = [IsAuthenticated, TienePermiso('exportar_cxc_fecha')]
 
     def get(self, request):
         fecha_inicio = request.query_params.get('desde')
@@ -254,7 +246,7 @@ class ExportarCxCPorFechaAPIView(APIView):
         return generar_pdf_cxc(cuentas, cliente=None)
     
 class ExportarCxCPorClienteYFechaAPIView(APIView):
-    permission_classes = [IsAuthenticated, TienePermiso('exportar_cxc_cliente_fecha')]
+    #permission_classes = [IsAuthenticated, TienePermiso('exportar_cxc_cliente_fecha')]
 
     def get(self, request):
         cliente_id = request.query_params.get('cliente')
@@ -279,7 +271,7 @@ class ExportarCxCPorClienteYFechaAPIView(APIView):
         return generar_pdf_cxc(cuentas, cliente)
     
 class ExportarCxPPorProveedorYFechaAPIView(APIView):
-    permission_classes = [IsAuthenticated, TienePermiso('exportar_cxp_proveedor_fecha')]
+    #permission_classes = [IsAuthenticated, TienePermiso('exportar_cxp_proveedor_fecha')]
 
     def get(self, request):
         proveedor_id = request.query_params.get('proveedor')
@@ -304,7 +296,7 @@ class ExportarCxPPorProveedorYFechaAPIView(APIView):
         return generar_pdf_cxp(cuentas, proveedor)
     
 class ExportarCxPPorFechaAPIView(APIView):
-    permission_classes = [IsAuthenticated, TienePermiso('exportar_cxp_fecha')]
+    #permission_classes = [IsAuthenticated, TienePermiso('exportar_cxp_fecha')]
 
     def get(self, request):
         fecha_inicio = request.query_params.get('desde')
@@ -323,7 +315,7 @@ class ExportarCxPPorFechaAPIView(APIView):
         return generar_pdf_cxp(cuentas, proveedor=None) 
     
 class EstadoResultadosAPIView(APIView):
-    permission_classes = [IsAuthenticated, TienePermiso('ver_estres')]
+    #permission_classes = [IsAuthenticated, TienePermiso('ver_estres')]
 
     def get(self, request):
         hoy = datetime.now().date()
@@ -466,7 +458,7 @@ class EstadoResultadosAPIView(APIView):
         }
 
 class ExportarEstresPDFAPIView(APIView):
-    permission_classes = [IsAuthenticated, TienePermiso('exportar_estres')]
+    #permission_classes = [IsAuthenticated, TienePermiso('exportar_estres')]
 
     def get(self, request):
         anio = request.query_params.get('anio')

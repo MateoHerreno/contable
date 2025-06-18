@@ -9,10 +9,10 @@ encender entornor virtual
 windows: env\Scripts\activate
 linux: source env/bin/activate
 
-pip install -r requirements.txt
 
 para arrancar el servidor navegar sotware_contable\contabilidad
 ejecutar 
+pip install -r requirements.txt
 python manage.py runserver   
 
 comits

@@ -28,7 +28,7 @@ software_contable
 |   │   └── wsgi.py
 |   ├── modulo_financiero/       # Tu API completa
 |   │   ├── >_pycache_
-|   │   ├── >migrations          #todos los makemigrations antes de irese a la db
+|   │   ├── > migrations          #todos los makemigrations antes de irese a la db
 |   │   ├── _initi_
 |   │   ├── admin.py             #todo lo que se imprime en djangoadmin
 |   │   ├── apps.py               
@@ -40,7 +40,9 @@ software_contable
 |   │   ├── test.py
 |   │   ├── urls.py              #todos los endpoints creados para la api de modulo_financiero
 |   │   ├── utils.py             #utlidades varias como generacion de tokens, humanizar numeros grandes, export de pdf
-|   │   └── views.py             #toda la logica se integra para hacer una url y usarla en urls
+|   │   ├── views.py             #toda la logica se integra para hacer una url y usarla en urls
+|   │   ├── zpermisos_defin...   #todos los permisos personalizados definidos que se cargan por defecto
+|   │   └── zpermisos.txt        #todos los permisos personalizados para usar en django shell
 |   ├── frontend/                # Carpeta nueva para el proyecto React    |
 |   │   ├── public/                                                        |
 |   │   ├── src/                                                           | pendiente

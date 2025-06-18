@@ -1,9 +1,11 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser,PermissionsMixin
-from .authentication import CustomUserManager
-from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
+from .authentication import CustomUserManager
+from django.db.models import JSONField
+from django.utils import timezone
+from django.db import models
 
 class Perfil(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
@@ -93,28 +95,66 @@ class Cliente(models.Model):
     saldo = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     def __str__(self):
         return self.nombre
+    
+class ConceptoCXP(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.nombre
+    
+    @staticmethod
+    def inicializar_ccxp():
+        conceptos = [
+        "nomina",
+        "servicios",
+        "otrosOperativos",
+        "honorariosADMON",
+        "honorariosCONT",
+        "segSocial",
+        "otrosADMON",
+        "impuestos",
+        "gastosBancarios",
+        ]
+        for nombre in conceptos:
+            ConceptoCXP.objects.get_or_create(nombre=nombre)
+
+class ConceptoCXC(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.nombre
+    
+    @staticmethod
+    def inicializar_ccxc():
+        conceptos = [
+        "VentaProductos",
+        "VentaServicios",
+        "OtrosIngresos"
+        ]
+        for nombre in conceptos:
+            ConceptoCXC.objects.get_or_create(nombre=nombre)
 
 class CuentaPorPagar(models.Model):
     fecha = models.DateTimeField(default = timezone.now)
     n_cxp =  models.AutoField(primary_key=True)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
-    concepto = models.TextField(blank=False, null=False)
+    conceptoFijo = models.ForeignKey(ConceptoCXP, on_delete=models.PROTECT)
+    conceptoDetalle = models.TextField(null=False, default=1)
     val_bruto = models.DecimalField(max_digits=15, decimal_places=2, validators=[MinValueValidator(0)])
-    iva = models.DecimalField(max_digits=15, decimal_places=2,default=0,validators=[MinValueValidator(0)] )
-    neto_facturado = models.DecimalField(max_digits=15, decimal_places=2,default=0,validators=[MinValueValidator(0)])
     saldo_anterior = models.DecimalField(max_digits=15, decimal_places=2)
     abonos = models.DecimalField(max_digits=15, decimal_places=2, default=0,validators=[MinValueValidator(0)])
     pendiente_por_pagar = models.DecimalField(max_digits=15, decimal_places=2)
 
     def __str__(self):
-        return f"{self.proveedor.nombre} - cxp:{self.n_cxp}"
+        return f"{self.proveedor.nombre} - cxp : {self.n_cxp}"
 
 class CuentaPorCobrar(models.Model):
     fecha = models.DateTimeField(default=timezone.now)
     n_cxc = models.AutoField(primary_key=True)
     cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE)
-    concepto = models.TextField(blank=False, null=False)  # obligatorio
-    val_bruto = models.DecimalField(max_digits=15, decimal_places=2, validators=[MinValueValidator(0)])
+    conceptoFijo = models.ForeignKey(ConceptoCXC, on_delete=models.PROTECT)
+    conceptoDetalle = models.TextField(blank=True, null=True)  # obligatorio
+    val_bruto = models.DecimalField(max_digits=15, decimal_places=2,)
     iva = models.DecimalField(max_digits=15, decimal_places=2,default=0,validators=[MinValueValidator(0)] )
     retenciones = models.DecimalField(max_digits=15, decimal_places=2,default=0,validators=[MinValueValidator(0)])
     neto_facturado = models.DecimalField(max_digits=15, decimal_places=2,default=0,validators=[MinValueValidator(0)])
@@ -123,9 +163,53 @@ class CuentaPorCobrar(models.Model):
     pendiente_por_pagar = models.DecimalField(max_digits=15, decimal_places=2)
 
     def __str__(self):
-        return f"{self.cliente.nombre} - cxc:{self.n_cxc}"
+        return f"{self.cliente.nombre} - cxc : {self.n_cxc}"
+
+class NotaCredito(models.Model):
+    cuenta = models.OneToOneField('CuentaPorCobrar',on_delete=models.CASCADE,related_name='notacredito')
+    descripcion = models.TextField()
+    creada = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Nota de crédito para CxC {self.cuenta.n_cxc}"
+    
+class EstadoResultadosMensual(models.Model):
+    anio = models.PositiveIntegerField()
+    mes = models.PositiveSmallIntegerField(choices=[(i, _(str(i))) for i in range(1, 13)])
+
+    # TOTALES
+    ingresos_total = models.DecimalField(max_digits=15, decimal_places=2, validators=[MinValueValidator(0)])
+    costos_operacion_total = models.DecimalField(max_digits=15, decimal_places=2, validators=[MinValueValidator(0)])
+    utilidad_bruta = models.DecimalField(max_digits=15, decimal_places=2)
+
+    gastos_administrativos_total = models.DecimalField(max_digits=15, decimal_places=2, validators=[MinValueValidator(0)])
+    utilidad_operacional = models.DecimalField(max_digits=15, decimal_places=2)
+
+    otros_costos_total = models.DecimalField(max_digits=15, decimal_places=2, validators=[MinValueValidator(0)])
+    utilidad_antes_impuestos = models.DecimalField(max_digits=15, decimal_places=2)
+
+    gastos_impuestos = models.DecimalField(max_digits=15, decimal_places=2, validators=[MinValueValidator(0)])
+    utilidad_neta = models.DecimalField(max_digits=15, decimal_places=2)
+
+    # DESGLOSE POR CONCEPTO (agrupaciones)
+    ingresos_detalle = JSONField(default=dict)
+    costos_operacion_detalle = JSONField(default=dict)
+    gastos_administrativos_detalle = JSONField(default=dict)
+    otros_costos_detalle = JSONField(default=dict)
+    impuestos_detalle = JSONField(default=dict)
+
+    creado = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('anio', 'mes')
+        verbose_name = "Estado de Resultados Mensual"
+        verbose_name_plural = "Estados de Resultados Mensuales"
+
+    def __str__(self):
+        return f"Estado de Resultados - {self.mes}/{self.anio}"
 
 class PermisoPersonalizado(models.Model):
+
     accion = models.CharField(max_length=100, unique=True)
 
     admin = models.BooleanField(default=False)
@@ -135,3 +219,4 @@ class PermisoPersonalizado(models.Model):
 
     def __str__(self):
         return self.accion
+    

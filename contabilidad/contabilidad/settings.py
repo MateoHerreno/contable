@@ -5,10 +5,8 @@ import os
 from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-SECRET_KEY = 'django-insecure-n5ce!nkgntiez8n^+*b_(j$$t7nbnisj=g*7v5^+m+@#&k3bc8'
-
-DEBUG = True
+SECRET_KEY = config('SECRET_KEY')
+DEBUG = config('DEBUG')
 
 ALLOWED_HOSTS = []
 
@@ -95,7 +93,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = "modulo_financiero.Usuario"
 AUTH_PROFILE_MODULE = "modulo_financiero.Usuario"
 
-
+#login requerido o no!
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',  # Por defecto requiere estar logueado
@@ -105,13 +103,23 @@ REST_FRAMEWORK = {
     ],
 }
 
+"""
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',
+    ),
+}
+"""
+
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = f'software contable <{EMAIL_HOST_USER}>'
+DEFAULT_FROM_EMAIL = f'Contable <{EMAIL_HOST_USER}>'
 
 #esta es la confi para que swager genere json y corra dentro de la url de django
 STATICFILES_DIRS = [

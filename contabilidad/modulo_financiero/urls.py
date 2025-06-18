@@ -12,8 +12,12 @@ router.register(r'tiendas', views. TiendaViewSet)
 router.register(r'usuarios', views. UsuarioViewSet)
 router.register(r'proveedores', views. ProveedorViewSet)
 router.register(r'clientes', views. ClienteViewSet)
+router.register(r'conceptoscxp', ConceptoCXPViewSet)
+router.register(r'conceptoscxc', ConceptoCXCViewSet)
 router.register(r'cxp', views. CuentaPorPagarViewSet)
-router.register(r'cxp', views. CuentaPorCobrarViewSet)
+router.register(r'cxc', views. CuentaPorCobrarViewSet)
+router.register(r'notaCredito', NotaCreditoViewSet)
+
 
 urlpatterns = [
     #swagger para documentacion de la api
@@ -26,6 +30,8 @@ urlpatterns = [
     path('api/passwordRequest/', SolicitudRecuperacionAPIView.as_view(), name='password-reset-request'), #peticion para cambiar contraseña
     path('api/passwordReset/', PasswordResetAPIView.as_view(), name='password-reset'), # json para cambiar la contraseña
     path('api/calcusaldos/', RecalcularSaldosAPIView.as_view(), name='recalcular-saldos'),#post - dispara el calculo de saldos para guardarlos en la db clientes.saldo
+    path('api/estres/', EstadoResultadosAPIView.as_view(), name='estado-resultados'),# get- acopañar de fecha y año en ete formato /api/estres/?anio=2025&mes=6
+    path('api/exportarestres/', ExportarEstresPDFAPIView.as_view(), name='exportar-estres'),
     path('api/exportcxcfecha/', ExportarCxCPorFechaAPIView.as_view(), name='exportar-cxc-fecha'),
     path('api/exportcxpfecha/', ExportarCxPPorFechaAPIView.as_view(), name='exportar-cxp-fecha'),
     path('api/exportcxcclienfecha/', ExportarCxCPorClienteYFechaAPIView.as_view(), name='exportar-cxc-cliente-fecha'),

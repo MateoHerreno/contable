@@ -1,7 +1,5 @@
 from django.contrib.auth.base_user import BaseUserManager
-
-#from rest_framework import authentication
-#from rest_framework import exceptions
+from django.utils.translation import gettext_lazy as _
 
 class CustomUserManager(BaseUserManager):
     """

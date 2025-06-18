@@ -51,14 +51,7 @@ class NoEditarAdministradores(BasePermission):
         return True
 
 def filtrar_queryset_por_rol(queryset, user, campo_rol='rol', prefijo=''):
-    """
-    Filtra un queryset excluyendo objetos relacionados a usuarios de rol superior.
-    Parámetros:
-    - queryset: el queryset a filtrar (ej: Usuario.objects.all())
-    - user: el usuario autenticado (request.user)
-    - campo_rol: nombre del campo que representa el rol
-    - prefijo: usado para relaciones (ej: 'usuario__' para Perfil)
-    """
+   
     if user.rol == 1:
         return queryset
     elif user.rol == 2:

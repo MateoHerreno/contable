@@ -1,0 +1,74 @@
+from modulo_financiero.models import PermisoPersonalizado
+
+permisos = [
+    {"accion": "create_usuario", "admin": True, "gerente": True, "sprempleado": False, "empleado": False},
+    {"accion": "update_usuario", "admin": True, "gerente": True, "sprempleado": False, "empleado": False},
+    {"accion": "delete_usuario", "admin": True, "gerente": True, "sprempleado": False, "empleado": False},
+    {"accion": "read_usuario",   "admin": True, "gerente": True, "sprempleado": True,  "empleado": True},
+
+    {"accion": "create_empresa", "admin": True, "gerente": True, "sprempleado": False, "empleado": False},
+    {"accion": "update_empresa", "admin": True, "gerente": True, "sprempleado": False, "empleado": False},
+    {"accion": "delete_empresa", "admin": True, "gerente": True, "sprempleado": False, "empleado": False},
+    {"accion": "read_empresa",   "admin": True, "gerente": True, "sprempleado": True,  "empleado": True},
+
+    {"accion": "create_tienda", "admin": True, "gerente": True, "sprempleado": False, "empleado": False},
+    {"accion": "update_tienda", "admin": True, "gerente": True, "sprempleado": False, "empleado": False},
+    {"accion": "delete_tienda", "admin": True, "gerente": True, "sprempleado": False, "empleado": False},
+    {"accion": "read_tienda",   "admin": True, "gerente": True, "sprempleado": True,  "empleado": True},
+
+    {"accion": "create_proveedor", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "update_proveedor", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "delete_proveedor", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "read_proveedor",   "admin": True, "gerente": True, "sprempleado": True, "empleado": True},
+
+    {"accion": "create_cliente", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "update_cliente", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "delete_cliente", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "read_cliente",   "admin": True, "gerente": True, "sprempleado": True, "empleado": True},
+
+    {"accion": "create_conceptocxp", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "update_conceptocxp", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "delete_conceptocxp", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "read_conceptocxp",   "admin": True, "gerente": True, "sprempleado": True, "empleado": True},
+
+    {"accion": "create_conceptocxc", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "update_conceptocxc", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "delete_conceptocxc", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "read_conceptocxc",   "admin": True, "gerente": True, "sprempleado": True, "empleado": True},
+
+    {"accion": "create_cxp", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "update_cxp", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "delete_cxp", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "read_cxp",   "admin": True, "gerente": True, "sprempleado": True, "empleado": True},
+
+    {"accion": "create_cxc", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "update_cxc", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "delete_cxc", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "read_cxc",   "admin": True, "gerente": True, "sprempleado": True, "empleado": True},
+
+    {"accion": "create_notacredito", "admin": True, "gerente": True, "sprempleado": False, "empleado": False},
+    {"accion": "update_notacredito", "admin": True, "gerente": True, "sprempleado": False, "empleado": False},
+    {"accion": "delete_notacredito", "admin": True, "gerente": True, "sprempleado": False, "empleado": False},
+    {"accion": "read_notacredito",   "admin": True, "gerente": True, "sprempleado": True,  "empleado": True},
+
+    {"accion": "recalcular_saldos", "admin": True, "gerente": True, "sprempleado": False, "empleado": False},
+
+    {"accion": "exportar_cxc_fecha",           "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "exportar_cxp_fecha",           "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "exportar_cxc_cliente_fecha",   "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "exportar_cxp_proveedor_fecha", "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+
+    {"accion": "ver_estres",       "admin": True, "gerente": True, "sprempleado": True, "empleado": False},
+    {"accion": "exportar_estres",  "admin": True, "gerente": True, "sprempleado": False, "empleado": False},
+]
+
+for p in permisos:
+    PermisoPersonalizado.objects.update_or_create(
+        accion=p["accion"],
+        defaults={
+            "admin": p["admin"],
+            "gerente": p["gerente"],
+            "sprempleado": p["sprempleado"],
+            "empleado": p["empleado"]
+        }
+    )

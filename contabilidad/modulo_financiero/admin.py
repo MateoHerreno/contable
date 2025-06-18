@@ -50,6 +50,16 @@ class ClienteAdmin(admin.ModelAdmin):
     search_fields = ['nombre', 'nit']
     ordering = ('id',)
 
+@admin.register(ConceptoCXP)
+class ConceptoCXPAdmin(admin.ModelAdmin):
+    list_display = ['id', 'nombre']
+    search_fields = ['nombre']
+
+@admin.register(ConceptoCXC)
+class ConceptoCXCAdmin(admin.ModelAdmin):
+    list_display = ['id', 'nombre']
+    search_fields = ['nombre']
+
 @admin.register(CuentaPorPagar)
 class CuentaPorPagarAdmin(admin.ModelAdmin):
     list_display = ['n_cxp', 'proveedor', 'fecha', 'val_bruto', 'pendiente_por_pagar']
@@ -67,3 +77,9 @@ class PermisoPersonalizadoAdmin(admin.ModelAdmin):
     list_display = ('accion', 'admin', 'gerente', 'sprempleado', 'empleado')
     list_editable = ('admin', 'gerente', 'sprempleado', 'empleado')
     search_fields = ('accion',)
+
+
+@admin.register(NotaCredito)
+class NotaCreditoAdmin(admin.ModelAdmin):
+    list_display = ['id', 'cuenta', 'creada']
+    search_fields = ['descripcion', 'cuenta__cliente__nombre']

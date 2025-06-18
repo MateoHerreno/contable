@@ -135,7 +135,7 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
 
-    'ALGORITHM': 'HS256',
+    'ALGORITHM': config('ALGORITHM'),
     'SIGNING_KEY': SECRET_KEY,
 
     'AUTH_HEADER_TYPES': ('AZ',), # este es el prefijo antes de enviar el token key de acces

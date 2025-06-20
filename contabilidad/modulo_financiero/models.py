@@ -176,29 +176,22 @@ class NotaCredito(models.Model):
 class EstadoResultadosMensual(models.Model):
     anio = models.PositiveIntegerField()
     mes = models.PositiveSmallIntegerField(choices=[(i, _(str(i))) for i in range(1, 13)])
-
-    # TOTALES
     ingresos_total = models.DecimalField(max_digits=15, decimal_places=2, validators=[MinValueValidator(0)])
     costos_operacion_total = models.DecimalField(max_digits=15, decimal_places=2, validators=[MinValueValidator(0)])
     utilidad_bruta = models.DecimalField(max_digits=15, decimal_places=2)
-
     gastos_administrativos_total = models.DecimalField(max_digits=15, decimal_places=2, validators=[MinValueValidator(0)])
     utilidad_operacional = models.DecimalField(max_digits=15, decimal_places=2)
-
     otros_costos_total = models.DecimalField(max_digits=15, decimal_places=2, validators=[MinValueValidator(0)])
     utilidad_antes_impuestos = models.DecimalField(max_digits=15, decimal_places=2)
-
     gastos_impuestos = models.DecimalField(max_digits=15, decimal_places=2, validators=[MinValueValidator(0)])
     utilidad_neta = models.DecimalField(max_digits=15, decimal_places=2)
-
     # DESGLOSE POR CONCEPTO (agrupaciones)
     ingresos_detalle = JSONField(default=dict)
     costos_operacion_detalle = JSONField(default=dict)
     gastos_administrativos_detalle = JSONField(default=dict)
     otros_costos_detalle = JSONField(default=dict)
     impuestos_detalle = JSONField(default=dict)
-
-    creado = models.DateTimeField(auto_now_add=True)
+    creado = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ('anio', 'mes')

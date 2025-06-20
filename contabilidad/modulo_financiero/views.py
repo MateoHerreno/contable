@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import viewsets,status
 from rest_framework.views import APIView
 from rest_framework import permissions
+from django.utils.timezone import make_aware
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from drf_yasg.views import get_schema_view
@@ -333,8 +334,8 @@ class EstadoResultados(APIView):
     def _calcular_estado(self, anio, mes):
         from .models import EstadoResultadosMensual
 
-        fecha_inicio = datetime(anio, mes, 1)
-        fecha_fin = datetime(anio, mes, monthrange(anio, mes)[1], 23, 59, 59)
+        fecha_inicio = make_aware(datetime(anio, mes, 1))
+        fecha_fin = make_aware(datetime(anio, mes, monthrange(anio, mes)[1], 23, 59, 59))
 
         cxp_qs = CuentaPorPagar.objects.filter(fecha__range=(fecha_inicio, fecha_fin))
         cxc_qs = CuentaPorCobrar.objects.filter(fecha__range=(fecha_inicio, fecha_fin))

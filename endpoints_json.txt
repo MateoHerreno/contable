@@ -1,31 +1,33 @@
 peticion cambiar contraseña
     post - http://127.0.0.1:8000/api/passwordRequest/
-    {
-        "email":"admin@admin.com"
-    }
+    body:
+        {
+            "email":"admin@admin.com"
+        }
 
 cambiar contraseña
     post - http://127.0.0.1:8000/api/passwordReset/
-    {
-    "email": "admin@admin.com",
-    "token_recuperar": "seRk-3s74",
-    "nueva_password": "123456789",
-    "confirmar_password": "123456789"
-    }
+    body:   
+        {
+            "email": "admin@admin.com",
+            "token_recuperar": "seRk-3s74",
+            "nueva_password": "123456789",
+            "confirmar_password": "123456789"
+        }
 
 solicitar token acces login
     post - http://127.0.0.1:8000/api/token/
         body:
             {
-            "email": "admin@admin.com",
-            "password": "123456"
+                "email": "admin@admin.com",
+                "password": "123456"
             }
 
 refresch token para un nuevo acces
     post - http://127.0.0.1:8000/api/refresh/
         body:
             {
-            "refresh": ""
+                "refresh": ""
             }
 
             ______________________________
@@ -49,10 +51,10 @@ Empresas
     put/patch - http://127.0.0.1:8000/api/empresas/_id
         body:
             {
-            "perfiles": [1,2,3],
-            "nombre": "empresaejemplo",
-            "nit": 123456,
-            "telefono": "123456"
+                "perfiles": [1,2,3],
+                "nombre": "empresaejemplo",
+                "nit": 123456,
+                "telefono": "123456"
             }
        
 
@@ -88,16 +90,17 @@ Usuarios
     post - http://127.0.0.1:8000/api/usuarios/
     -editar 
     put/patch - http://127.0.0.1:8000/api/usuarios/_id
-        {
-            "nombre": "usuario prueba",
-            "email": "usuario@ousuario.xyz",
-            "password": "123456",
-            "password2": "123456",
-            "telefono": 123456,
-            "is_active": true,
-            "tienda": 1l,
-            "rol": 4
-        }
+        body:
+            {
+                "nombre": "usuario prueba",
+                "email": "usuario@ousuario.xyz",
+                "password": "123456",
+                "password2": "123456",
+                "telefono": 123456,
+                "is_active": true,
+                "tienda": 1l,
+                "rol": 4
+            }
 
 Proveedores
     -ver todas
@@ -111,11 +114,12 @@ Proveedores
     post - http://127.0.0.1:8000/api/proveedores/
     -editar 
     put/patch - http://127.0.0.1:8000/api/proveedores/_id
-       {
-            "nombre": "prueba",
-            "nit": 123456,
-            "telefono": "123456"
-        }
+        body:
+            {
+                "nombre": "prueba",
+                "nit": 123456,
+                "telefono": "123456"
+            }
 
 Clientes
     -ver todas
@@ -129,11 +133,12 @@ Clientes
     post - http://127.0.0.1:8000/api/clientes/
     -editar 
     put/patch - http://127.0.0.1:8000/api/clientes/_id
-       {
-            "nombre": "prueba",
-            "nit": 123456,
-            "telefono": "123456"
-        }
+        body:
+            {
+                "nombre": "prueba",
+                "nit": 123456,
+                "telefono": "123456"
+            }
 
 cuentas por pagar
      -ver todas
@@ -147,13 +152,14 @@ cuentas por pagar
     post - http://127.0.0.1:8000/api/cxp/
     -editar 
     put/patch - http://127.0.0.1:8000/api/cxp/_id
-       {
-            "conceptoDetalle": "sillas",
-            "val_bruto":15000,
-            "abonos": 15000,
-            "proveedor": 1,
-            "conceptoFijo": 5
-        }
+        body:
+            {
+                "conceptoDetalle": "sillas",
+                "val_bruto":15000,
+                "abonos": 15000,
+                "proveedor": 1,
+                "conceptoFijo": 5
+            }
 
 cuentas por cobrar
      -ver todas
@@ -167,27 +173,65 @@ cuentas por cobrar
     post - http://127.0.0.1:8000/api/cxc/
     -editar 
     put/patch - http://127.0.0.1:8000/api/cxc/_id
-       {
-            "descripcion_nota_credito": "si el val bruto es negativo",
-            "conceptoDetalle": " devolucion",
-            "val_bruto": -1500,
-            "iva": 0,
-            "retenciones": 0,
-            "abonos": 0,
-            "cliente": 1,
-            "conceptoFijo": 1
-        }
+        body:
+            {
+                "descripcion_nota_credito": "si el val bruto es negativo",
+                "conceptoDetalle": " devolucion",
+                "val_bruto": -1500,
+                "iva": 0,
+                "retenciones": 0,
+                "abonos": 0,
+                "cliente": 1,
+                "conceptoFijo": 1
+            }
 
 nota credito
      -ver todas
     get - http://127.0.0.1:8000/api/notacredito/
     -ver una
     get- http://127.0.0.1:8000/api/notacredito/_id
-    -eliminar una 
-    delete - http://127.0.0.1:8000/api/notacredito/_id
-
-sincronizarsaldos cliente proveedor con cuentas cobrar-pagar en clientes
-    post -http://127.0.0.1:8000/api/calcusaldos/
 
 consultar estado de resultados
     get - http://127.0.0.1:8000/api/estres/
+
+generar pdf cxc fecha
+    post - http://127.0.0.1:8000/api/pdfcxcfecha/
+        body:
+            {
+                "fecha_inicio": "2025-06-01",
+                "fecha_fin": "2025-06-30"
+            }
+
+generar pdf cxc cliente fecha
+    post - http://127.0.0.1:8000/api/pdfcxcclif/
+        body:
+            {
+                "cliente": 1,
+                "fecha_inicio": "2025-06-01",
+                "fecha_fin": "2025-06-30"
+            }
+
+generar pdf cxp fecha
+    post - http://127.0.0.1:8000/api/pdfcxpfecha/
+        body:
+            {
+                "fecha_inicio": "2025-06-01",
+                "fecha_fin": "2025-06-30"
+            }
+
+generar pdf cxp proveedor fecha
+    post - http://127.0.0.1:8000/api/pdfcxcclif/
+        body:
+            {
+                "proveedor": 1,
+                "fecha_inicio": "2025-06-01",
+                "fecha_fin": "2025-06-30"
+            }
+
+generar pdf estado de resultados año manizales
+    post - http://127.0.0.1:8000/api/pdfestres/
+        body:
+            {
+                "anio": 2025,
+                "mes": 6
+            }

@@ -50,7 +50,7 @@ class Usuario(AbstractUser, PermissionsMixin):
     email = models.EmailField(max_length=254, unique=True, blank=False, null=True)
     password = models.CharField(max_length=254, blank=False, null=True)
     token_recuperar = models.CharField(max_length=254, blank=False, null=False, default='sin cambios pendientes ')
-    telefono = models.IntegerField(null=False, blank=True, default='0')
+    telefono = models.CharField(null=False, blank=True, default=0)
     is_active = models.BooleanField(default=True)
     tienda = models.ForeignKey('Tienda', on_delete=models.CASCADE, null=True, blank=True)
 
@@ -159,7 +159,7 @@ class CuentaPorCobrar(models.Model):
     retenciones = models.DecimalField(max_digits=15, decimal_places=2,default=0,validators=[MinValueValidator(0)])
     neto_facturado = models.DecimalField(max_digits=15, decimal_places=2,default=0,validators=[MinValueValidator(0)])
     saldo_anterior = models.DecimalField(max_digits=15, decimal_places=2)
-    abonos = models.DecimalField(max_digits=15, decimal_places=2, default=0,validators=[MinValueValidator(0)])
+    abonos = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     pendiente_por_pagar = models.DecimalField(max_digits=15, decimal_places=2)
 
     def __str__(self):

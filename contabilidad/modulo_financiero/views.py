@@ -62,6 +62,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
             return [TienePermiso('delete_empresa')()]
         return [TienePermiso('read_empresa')()]
 """
+
 class TiendaViewSet(viewsets.ModelViewSet):
     queryset = Tienda.objects.all()
     serializer_class = TiendaSerializer
@@ -193,7 +194,7 @@ class NotaCreditoViewSet(viewsets.ModelViewSet):
             return [TienePermiso('delete_notacredito')()]
         return [TienePermiso('read_notacredito')()]"""
 
-class PasswordResetAPIView(APIView):
+class PasswordReset(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
         serializer = PasswordResetSerializer(data=request.data)
@@ -202,7 +203,7 @@ class PasswordResetAPIView(APIView):
             return Response({"mensaje": "Contraseña actualizada correctamente."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class SolicitudRecuperacionAPIView(APIView):
+class SolicitudRecuperacion(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
         email = request.data.get('email')
@@ -218,43 +219,33 @@ class SolicitudRecuperacionAPIView(APIView):
         enviar_email_recuperacion(usuario.email, token)
         return Response({'mensaje': 'Token de recuperación enviado a tu email.'}, status=status.HTTP_200_OK)
 
-class RecalcularSaldosAPIView(APIView):
-    #permission_classes = [IsAuthenticated, TienePermiso('recalcular_saldos')]
-
-    def post(self, request):
-        actualizar_saldos()
-        return Response({
-            "mensaje": "Saldos de clientes y proveedores actualizados correctamente."
-        })
-    
-class ExportarCxCPorFechaAPIView(APIView):
-
+class ExportarCxcPorFecha(APIView):
     #permission_classes = [IsAuthenticated, TienePermiso('exportar_cxc_fecha')]
-
-    def get(self, request):
-        fecha_inicio = request.query_params.get('desde')
-        fecha_fin = request.query_params.get('hasta')
+    def post(self, request):
+        fecha_inicio = request.data.get('fecha_inicio')
+        fecha_fin = request.data.get('fecha_fin')
 
         if not fecha_inicio or not fecha_fin:
-            return Response({'error': 'Debe especificar "desde" y "hasta".'}, status=400)
+            return Response({'error': 'Debe enviar "fecha_inicio" y "fecha_fin" en el cuerpo JSON.'}, status=400)
 
-        cuentas = CuentaPorCobrar.objects.filter(fecha__range=[fecha_inicio, fecha_fin]).order_by('fecha')
+        cuentas = CuentaPorCobrar.objects.filter(
+            fecha__range=[fecha_inicio, fecha_fin]
+        ).order_by('fecha')
 
         if not cuentas.exists():
             return Response({'error': 'No se encontraron cuentas en el rango indicado.'}, status=404)
 
         return generar_pdf_cxc(cuentas, cliente=None)
     
-class ExportarCxCPorClienteYFechaAPIView(APIView):
+class ExportarCxcPorClienteYFecha(APIView):
     #permission_classes = [IsAuthenticated, TienePermiso('exportar_cxc_cliente_fecha')]
-
-    def get(self, request):
-        cliente_id = request.query_params.get('cliente')
-        fecha_inicio = request.query_params.get('desde')
-        fecha_fin = request.query_params.get('hasta')
+    def post(self, request):
+        cliente_id = request.data.get('cliente')
+        fecha_inicio = request.data.get('fecha_inicio')
+        fecha_fin = request.data.get('fecha_fin')
 
         if not cliente_id or not fecha_inicio or not fecha_fin:
-            return Response({'error': 'Debe especificar cliente, desde y hasta.'}, status=400)
+            return Response({'error': 'Debe enviar "fecha_inicio" y "fecha_fin" en el cuerpo JSON.'}, status=400)
 
         cliente = Cliente.objects.filter(id=cliente_id).first()
         if not cliente:
@@ -269,17 +260,34 @@ class ExportarCxCPorClienteYFechaAPIView(APIView):
             return Response({'error': 'No se encontraron cuentas para el cliente en el rango indicado.'}, status=404)
 
         return generar_pdf_cxc(cuentas, cliente)
-    
-class ExportarCxPPorProveedorYFechaAPIView(APIView):
-    #permission_classes = [IsAuthenticated, TienePermiso('exportar_cxp_proveedor_fecha')]
 
-    def get(self, request):
-        proveedor_id = request.query_params.get('proveedor')
-        fecha_inicio = request.query_params.get('desde')
-        fecha_fin = request.query_params.get('hasta')
+class ExportarCxpPorFecha(APIView):
+    #permission_classes = [IsAuthenticated, TienePermiso('exportar_cxp_fecha')]
+    def post(self, request):
+        fecha_inicio = request.data.get('fecha_inicio')
+        fecha_fin = request.data.get('fecha_fin')
+
+        if not fecha_inicio or not fecha_fin:
+            return Response({'error': 'Debe enviar "fecha_inicio" y "fecha_fin" en el cuerpo JSON.'}, status=400)
+
+        cuentas = CuentaPorPagar.objects.filter(
+            fecha__range=[fecha_inicio, fecha_fin]
+        ).order_by('fecha')
+
+        if not cuentas.exists():
+            return Response({'error': 'No se encontraron cuentas por pagar en el rango indicado.'}, status=404)
+
+        return generar_pdf_cxp(cuentas, proveedor=None)
+    
+class ExportarCxpPorProveedorYFecha(APIView):
+    #permission_classes = [IsAuthenticated, TienePermiso('exportar_cxp_proveedor_fecha')]
+    def post(self, request):
+        proveedor_id = request.data.get('proveedor')
+        fecha_inicio = request.data.get('fecha_inicio')
+        fecha_fin = request.data.get('fecha_fin')
 
         if not proveedor_id or not fecha_inicio or not fecha_fin:
-            return Response({'error': 'Debe especificar proveedor, desde y hasta.'}, status=400)
+            return Response({'error': 'Debe enviar "fecha_inicio" y "fecha_fin" en el cuerpo JSON.'}, status=400)
 
         proveedor = Proveedor.objects.filter(id=proveedor_id).first()
         if not proveedor:
@@ -295,68 +303,31 @@ class ExportarCxPPorProveedorYFechaAPIView(APIView):
 
         return generar_pdf_cxp(cuentas, proveedor)
     
-class ExportarCxPPorFechaAPIView(APIView):
-    #permission_classes = [IsAuthenticated, TienePermiso('exportar_cxp_fecha')]
 
-    def get(self, request):
-        fecha_inicio = request.query_params.get('desde')
-        fecha_fin = request.query_params.get('hasta')
-
-        if not fecha_inicio or not fecha_fin:
-            return Response({'error': 'Debe especificar "desde" y "hasta".'}, status=400)
-
-        cuentas = CuentaPorPagar.objects.filter(
-            fecha__range=[fecha_inicio, fecha_fin]
-        ).order_by('fecha')
-
-        if not cuentas.exists():
-            return Response({'error': 'No se encontraron cuentas por pagar en el rango indicado.'}, status=404)
-
-        return generar_pdf_cxp(cuentas, proveedor=None) 
-    
-class EstadoResultadosAPIView(APIView):
-    #permission_classes = [IsAuthenticated, TienePermiso('ver_estres')]
+class EstadoResultados(APIView):
+    # permission_classes = [IsAuthenticated, TienePermiso('ver_estres')]
 
     def get(self, request):
         hoy = datetime.now().date()
         anio = request.query_params.get('anio')
         mes = request.query_params.get('mes')
 
-        # → Si se envían año y mes específicos
         if anio and mes:
             anio = int(anio)
             mes = int(mes)
-            existente = EstadoResultadosMensual.objects.filter(anio=anio, mes=mes).first()
-            if existente:
-                return Response(self._formatear_salida(existente))
-            return Response({"error": "Ese mes aún no tiene estado de resultados calculado."}, status=404)
+        else:
+            # Buscar la fecha más reciente entre CxC y CxP
+            ultima_fecha_cxc = CuentaPorCobrar.objects.order_by('-fecha').values_list('fecha', flat=True).first()
+            ultima_fecha_cxp = CuentaPorPagar.objects.order_by('-fecha').values_list('fecha', flat=True).first()
 
-        # → Si NO se envía anio/mes: buscar el último mes con datos en CxC o CxP
-        ultima_fecha_cxc = CuentaPorCobrar.objects.order_by('-fecha').values_list('fecha', flat=True).first()
-        ultima_fecha_cxp = CuentaPorPagar.objects.order_by('-fecha').values_list('fecha', flat=True).first()
+            if not ultima_fecha_cxc and not ultima_fecha_cxp:
+                return Response({"error": "No hay datos contables disponibles."}, status=404)
 
-        if not ultima_fecha_cxc and not ultima_fecha_cxp:
-            return Response({"error": "No hay datos contables disponibles."}, status=404)
-
-        ultima_fecha = max(ultima_fecha_cxc or datetime.min, ultima_fecha_cxp or datetime.min)
-        anio = ultima_fecha.year
-        mes = ultima_fecha.month
-
-        existente = EstadoResultadosMensual.objects.filter(anio=anio, mes=mes).first()
-        if existente:
-            return Response(self._formatear_salida(existente))
-
-        # Si no existe aún: decidir si se guarda o no
-        es_ultimo_dia_mes_actual = (
-            hoy.year == anio and hoy.month == mes and
-            hoy.day == monthrange(hoy.year, hoy.month)[1]
-        )
+            ultima_fecha = max(ultima_fecha_cxc or datetime.min, ultima_fecha_cxp or datetime.min)
+            anio = ultima_fecha.year
+            mes = ultima_fecha.month
 
         instancia = self._calcular_estado(anio, mes)
-
-        if es_ultimo_dia_mes_actual:
-            instancia.save()
-
         return Response(self._formatear_salida(instancia))
 
     def _calcular_estado(self, anio, mes):
@@ -384,7 +355,6 @@ class EstadoResultadosAPIView(APIView):
             for k in costos_op
         }
         costos_operacion_total = sum(costos_operacion_detalle.values())
-
         utilidad_bruta = ingresos_total - costos_operacion_total
 
         admon = ["honorariosADMON", "honorariosCONT", "segSocial", "otrosADMON"]
@@ -407,25 +377,28 @@ class EstadoResultadosAPIView(APIView):
         gastos_impuestos = sum(impuestos_detalle.values())
         utilidad_neta = utilidad_antes_impuestos - gastos_impuestos
 
-        # Crear instancia (aún no guardada)
-        return EstadoResultadosMensual(
+        # Guardar o actualizar
+        estado, creado = EstadoResultadosMensual.objects.update_or_create(
             anio=anio,
             mes=mes,
-            ingresos_total=ingresos_total,
-            costos_operacion_total=costos_operacion_total,
-            utilidad_bruta=utilidad_bruta,
-            gastos_administrativos_total=gastos_admon_total,
-            utilidad_operacional=utilidad_operacional,
-            otros_costos_total=otros_costos_total,
-            utilidad_antes_impuestos=utilidad_antes_impuestos,
-            gastos_impuestos=gastos_impuestos,
-            utilidad_neta=utilidad_neta,
-            ingresos_detalle=ingresos_detalle,
-            costos_operacion_detalle=costos_operacion_detalle,
-            gastos_administrativos_detalle=gastos_admon_detalle,
-            otros_costos_detalle=otros_costos_detalle,
-            impuestos_detalle=impuestos_detalle
+            defaults={
+                "ingresos_total": ingresos_total,
+                "ingresos_detalle": ingresos_detalle,
+                "costos_operacion_total": costos_operacion_total,
+                "costos_operacion_detalle": costos_operacion_detalle,
+                "utilidad_bruta": utilidad_bruta,
+                "gastos_administrativos_total": gastos_admon_total,
+                "gastos_administrativos_detalle": gastos_admon_detalle,
+                "utilidad_operacional": utilidad_operacional,
+                "otros_costos_total": otros_costos_total,
+                "otros_costos_detalle": otros_costos_detalle,
+                "utilidad_antes_impuestos": utilidad_antes_impuestos,
+                "gastos_impuestos": gastos_impuestos,
+                "impuestos_detalle": impuestos_detalle,
+                "utilidad_neta": utilidad_neta,
+            }
         )
+        return estado
 
     def _formatear_salida(self, instancia):
         return {
@@ -457,64 +430,19 @@ class EstadoResultadosAPIView(APIView):
             "utilidad_neta": float(instancia.utilidad_neta),
         }
 
-class ExportarEstresPDFAPIView(APIView):
+class ExportarEstresFecha(APIView):
     #permission_classes = [IsAuthenticated, TienePermiso('exportar_estres')]
 
-    def get(self, request):
-        anio = request.query_params.get('anio')
-        mes = request.query_params.get('mes')
+    def post(self, request):
+        anio = request.data.get('anio')
+        mes = request.data.get('mes')
 
         if not anio or not mes:
-            return Response({'error': 'Debe proporcionar año y mes como parámetros.'}, status=400)
+            return Response({'error': 'Debe enviar "anio" y "mes".'}, status=400)
 
         try:
             estado = EstadoResultadosMensual.objects.get(anio=anio, mes=mes)
         except EstadoResultadosMensual.DoesNotExist:
-            return Response({'error': 'No se encontró un estado de resultados guardado para ese periodo.'}, status=404)
+            return Response({'error': 'No se encontró estado de resultados para ese periodo.'}, status=404)
 
-        # Generar PDF
-        buffer = BytesIO()
-        pdf = canvas.Canvas(buffer, pagesize=letter)
-        pdf.setTitle(f"Estado de Resultados - {mes}/{anio}")
-
-        y = 750
-        def escribir(texto, indent=0):
-            nonlocal y
-            pdf.drawString(50 + indent, y, texto)
-            y -= 15
-            if y < 50:
-                pdf.showPage()
-                y = 750
-
-        escribir(f"Estado de Resultados - {mes}/{anio}")
-        escribir(f"Ingresos: ${estado.ingresos_total:,.2f}")
-        for k, v in estado.ingresos_detalle.items():
-            escribir(f"{k}: ${v:,.2f}", indent=20)
-
-        escribir(f"Costos de Operación: ${estado.costos_operacion_total:,.2f}")
-        for k, v in estado.costos_operacion_detalle.items():
-            escribir(f"{k}: ${v:,.2f}", indent=20)
-
-        escribir(f"Utilidad Bruta: ${estado.utilidad_bruta:,.2f}")
-
-        escribir(f"Gastos Administrativos: ${estado.gastos_administrativos_total:,.2f}")
-        for k, v in estado.gastos_administrativos_detalle.items():
-            escribir(f"{k}: ${v:,.2f}", indent=20)
-
-        escribir(f"Utilidad Operacional: ${estado.utilidad_operacional:,.2f}")
-
-        escribir(f"Otros Costos: ${estado.otros_costos_total:,.2f}")
-        for k, v in estado.otros_costos_detalle.items():
-            escribir(f"{k}: ${v:,.2f}", indent=20)
-
-        escribir(f"Utilidad Antes de Impuestos: ${estado.utilidad_antes_impuestos:,.2f}")
-
-        escribir(f"Gastos por Impuestos: ${estado.gastos_impuestos:,.2f}")
-        for k, v in estado.impuestos_detalle.items():
-            escribir(f"{k}: ${v:,.2f}", indent=20)
-
-        escribir(f"Utilidad Neta: ${estado.utilidad_neta:,.2f}")
-
-        pdf.save()
-        buffer.seek(0)
-        return FileResponse(buffer, as_attachment=True, filename=f"estres_{anio}_{mes}.pdf")
+        return generar_pdf_estres(estado, anio, mes)

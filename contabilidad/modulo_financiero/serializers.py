@@ -3,6 +3,7 @@ from .models import *
 from decimal import Decimal, ROUND_HALF_UP
 from django.db.models import Sum
 from .utils import*
+from datetime import datetime
 
 class PerfilSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,7 +25,11 @@ class TiendaSerializer(serializers.ModelSerializer):
         return obj.usuario_set.count()
 
 class UsuarioSerializer(serializers.ModelSerializer):
-    password2 = serializers.CharField(write_only=True, label="confirm password")
+    password2 = serializers.CharField(
+        write_only=True,
+        label="confirm password",
+        required=False  # Solo se validará si es necesario
+    )
 
     class Meta:
         model = Usuario
@@ -39,15 +44,36 @@ class UsuarioSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep.pop('password', None)
+        rep.pop('password2', None)  # Oculta también password2 si por alguna razón se incluye
         return rep
 
     def validate(self, data):
         password = data.get('password')
-        password2 = self.initial_data.get('password2')  # lee el dato directamente del request
-        if password != password2:
-            raise serializers.ValidationError({
-                'password2': 'Las contraseñas no coinciden.'
-            })
+        password2 = self.initial_data.get('password2')
+
+        if self.instance is None:
+            # Crear: ambos campos deben estar y coincidir
+            if not password or not password2:
+                raise serializers.ValidationError({
+                    'password2': 'Debes confirmar la contraseña.'
+                })
+            if password != password2:
+                raise serializers.ValidationError({
+                    'password2': 'Las contraseñas no coinciden.'
+                })
+
+        else:
+            # Editar: solo se valida si se incluye una contraseña
+            if password:
+                if not password2:
+                    raise serializers.ValidationError({
+                        'password2': 'Debes confirmar la nueva contraseña.'
+                    })
+                if password != password2:
+                    raise serializers.ValidationError({
+                        'password2': 'Las contraseñas no coinciden.'
+                    })
+
         return data
 
     def validate_email(self, value):
@@ -64,12 +90,11 @@ class UsuarioSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        validated_data.pop('password2')
+        validated_data.pop('password2', None)
         password = validated_data.pop('password')
         usuario = Usuario(**validated_data)
         usuario.set_password(password)
 
-        # Seguridad extra: pasa el usuario autenticado al modelo
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             usuario._modificado_por = request.user
@@ -78,14 +103,15 @@ class UsuarioSerializer(serializers.ModelSerializer):
         return usuario
 
     def update(self, instance, validated_data):
+        validated_data.pop('password2', None)
         password = validated_data.pop('password', None)
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
         if password:
             instance.set_password(password)
 
-        # Seguridad extra: pasa el usuario autenticado al modelo
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             instance._modificado_por = request.user
@@ -161,12 +187,19 @@ class CuentaPorCobrarSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         # Formatear números
-        for field in [
+        """for field in [
             'val_bruto', 'iva', 'retenciones', 'neto_facturado',
             'saldo_anterior', 'abonos', 'pendiente_por_pagar'
         ]:
             if rep.get(field) is not None:
-                rep[field] = format_decimal_humano(rep[field])
+                rep[field] = format_decimal_humano(rep[field])"""
+
+        if rep.get('fecha'):
+            try:
+                fecha_obj = datetime.fromisoformat(rep['fecha'].replace('Z', '+00:00'))
+                rep['fecha'] = fecha_obj.strftime('%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                pass 
         # Mostrar descripción de nota de crédito si existe
         try:
             rep['nota_credito'] = {
@@ -179,38 +212,43 @@ class CuentaPorCobrarSerializer(serializers.ModelSerializer):
     def validate(self, data):
         val_bruto = data.get('val_bruto')
         descripcion = self.initial_data.get('descripcion_nota_credito', '').strip()
-        if val_bruto < 0 and not descripcion:
-            raise serializers.ValidationError({
-                'descripcion_nota_credito': 'Debes proporcionar una descripción si el valor bruto es negativo.'
-            })
+
+        if val_bruto is not None and val_bruto < 0:
+            if not descripcion:
+                if not self.instance:
+                    # Es creación y no se envió descripción
+                    raise serializers.ValidationError({
+                        'descripcion_nota_credito': 'Debes proporcionar una descripción si el valor bruto es negativo.'
+                    })
+                else:
+                    # Es edición: verificar si ya hay nota existente
+                    from modulo_financiero.models import NotaCredito
+                    tiene_nota = NotaCredito.objects.filter(cuenta=self.instance).exists()
+                    if not tiene_nota:
+                        raise serializers.ValidationError({
+                            'descripcion_nota_credito': 'Debes proporcionar una descripción si el valor bruto es negativo.'
+                        })
+
         return data
 
     def create(self, validated_data):
-        from modulo_financiero.models import NotaCredito
 
         cliente = validated_data['cliente']
         conceptoFijo = validated_data.get('conceptoFijo')
         descripcion_nc = self.initial_data.get('descripcion_nota_credito', '').strip()
-        val_bruto = validated_data.get('val_bruto',)
+        val_bruto = validated_data.get('val_bruto')
         abonos = validated_data.get('abonos') or Decimal('0')
-
         iva_pct = validated_data.pop('iva', 0)
+        retenciones_pct = validated_data.pop('retenciones', 0)
+
         if iva_pct not in [0, 5, 19]:
             raise serializers.ValidationError({'iva': 'Solo se permiten valores de IVA: 0, 5 o 19.'})
-
-        retenciones_pct = validated_data.pop('retenciones', 0)
         if not (0 <= retenciones_pct <= 12):
             raise serializers.ValidationError({'retenciones': 'Las retenciones deben estar entre 0% y 12%.'})
 
         iva = (val_bruto * Decimal(iva_pct) / Decimal(100)).quantize(Decimal('1.'), rounding=ROUND_HALF_UP)
         retenciones = (val_bruto * Decimal(retenciones_pct) / Decimal(100)).quantize(Decimal('1.'), rounding=ROUND_HALF_UP)
-
-        saldo_anterior = cliente.cuentaporcobrar_set.aggregate(
-            total=Sum('pendiente_por_pagar')
-        )['total'] or Decimal('0')
-
         neto_facturado = val_bruto + iva - retenciones
-        pendiente_por_pagar = neto_facturado + saldo_anterior - abonos
 
         cuenta = CuentaPorCobrar.objects.create(
             cliente=cliente,
@@ -220,9 +258,9 @@ class CuentaPorCobrarSerializer(serializers.ModelSerializer):
             iva=iva,
             retenciones=retenciones,
             neto_facturado=neto_facturado,
-            saldo_anterior=saldo_anterior,
             abonos=abonos,
-            pendiente_por_pagar=pendiente_por_pagar
+            saldo_anterior=Decimal('0'),              # ← valor temporal
+            pendiente_por_pagar=Decimal('0')          # ← valor temporal
         )
 
         if val_bruto < 0:
@@ -231,14 +269,12 @@ class CuentaPorCobrarSerializer(serializers.ModelSerializer):
                 descripcion=descripcion_nc
             )
 
-        cliente.saldo = pendiente_por_pagar
-        cliente.save()
+        recalcular_saldos_cliente(cliente.id)
         return cuenta
 
     def update(self, instance, validated_data):
         from modulo_financiero.models import NotaCredito
-
-        descripcion_nc = self.initial_data.get('descripcion_nota_credito', '').strip()
+        from modulo_financiero.utils import recalcular_saldos_cliente
 
         for campo in ['fecha', 'saldo_anterior', 'neto_facturado', 'pendiente_por_pagar']:
             validated_data.pop(campo, None)
@@ -256,32 +292,34 @@ class CuentaPorCobrarSerializer(serializers.ModelSerializer):
         if 'retenciones' in validated_data:
             retenciones_pct = validated_data.pop('retenciones')
             if not (0 <= retenciones_pct <= 12):
-                raise serializers.ValidationError({'retenciones': 'Las retenciones deben estar entre 0% y 12%.'})
+                raise serializers.ValidationError({'retenciones': 'Las retenciones deben estar entre 0% y 12.'})
             instance.retenciones = (instance.val_bruto * Decimal(retenciones_pct) / Decimal(100)).quantize(Decimal('1.'), rounding=ROUND_HALF_UP)
 
         instance.abonos = validated_data.get('abonos', instance.abonos or Decimal('0'))
         instance.neto_facturado = instance.val_bruto + instance.iva - instance.retenciones
-        instance.pendiente_por_pagar = instance.neto_facturado + instance.saldo_anterior - instance.abonos
+        instance.saldo_anterior = Decimal('0')            # valor temporal
+        instance.pendiente_por_pagar = Decimal('0')       # valor temporal
         instance.save()
 
+        # Nota de crédito (si corresponde)
         if instance.val_bruto < 0:
-            if not descripcion_nc:
+            descripcion_nc = self.initial_data.get('descripcion_nota_credito', '').strip()
+            nota_existente = NotaCredito.objects.filter(cuenta=instance).first()
+
+            if descripcion_nc:
+                NotaCredito.objects.update_or_create(
+                    cuenta=instance,
+                    defaults={'descripcion': descripcion_nc}
+                )
+            elif not nota_existente:
                 raise serializers.ValidationError({
                     'descripcion_nota_credito': 'Debes proporcionar una descripción si el valor bruto es negativo.'
                 })
-            NotaCredito.objects.update_or_create(
-                cuenta=instance,
-                defaults={'descripcion': descripcion_nc}
-            )
         else:
             NotaCredito.objects.filter(cuenta=instance).delete()
 
-        cuentas_cliente = CuentaPorCobrar.objects.filter(cliente=instance.cliente).exclude(pk=instance.pk)
-        cuenta_mas_reciente = cuentas_cliente.order_by('-fecha', '-n_cxc').first()
-        if not cuenta_mas_reciente or instance.fecha > cuenta_mas_reciente.fecha:
-            instance.cliente.saldo = instance.pendiente_por_pagar
-            instance.cliente.save()
-
+        # Recalcular saldos completos del cliente
+        recalcular_saldos_cliente(instance.cliente.id)
         return instance
      
 class CuentaPorPagarSerializer(serializers.ModelSerializer):
@@ -292,12 +330,20 @@ class CuentaPorPagarSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        for field in ['val_bruto', 'saldo_anterior', 'abonos', 'pendiente_por_pagar']:
+        """for field in ['val_bruto', 'saldo_anterior', 'abonos', 'pendiente_por_pagar']:
             if rep.get(field) is not None:
-                rep[field] = format_decimal_humano(rep[field])
+                rep[field] = format_decimal_humano(rep[field])"""
+        if rep.get('fecha'):
+            try:
+                fecha_obj = datetime.fromisoformat(rep['fecha'].replace('Z', '+00:00'))
+                rep['fecha'] = fecha_obj.strftime('%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                pass
         return rep
 
     def create(self, validated_data):
+        from modulo_financiero.utils import recalcular_saldos_proveedor
+
         proveedor = validated_data['proveedor']
         conceptoFijo = validated_data.get('conceptoFijo')
         val_bruto = validated_data.get('val_bruto', Decimal('0'))
@@ -309,28 +355,24 @@ class CuentaPorPagarSerializer(serializers.ModelSerializer):
         if abonos < 0:
             raise serializers.ValidationError({'abonos': 'Los abonos no pueden ser negativos.'})
 
-        saldo_anterior = proveedor.cuentaporpagar_set.aggregate(
-            total=Sum('pendiente_por_pagar')
-        )['total'] or Decimal('0')
-
-        pendiente_por_pagar = val_bruto + saldo_anterior - abonos
-
+        # Crear con valores temporales
         cuenta = CuentaPorPagar.objects.create(
             proveedor=proveedor,
             conceptoFijo=conceptoFijo,
             conceptoDetalle=validated_data.get('conceptoDetalle'),
             val_bruto=val_bruto,
-            saldo_anterior=saldo_anterior,
             abonos=abonos,
-            pendiente_por_pagar=pendiente_por_pagar
+            saldo_anterior=Decimal('0'),
+            pendiente_por_pagar=Decimal('0')
         )
 
-        proveedor.saldo = pendiente_por_pagar
-        proveedor.save()
-
+        # Recalcular todas las cuentas del proveedor
+        recalcular_saldos_proveedor(proveedor.id)
         return cuenta
 
     def update(self, instance, validated_data):
+        from modulo_financiero.utils import recalcular_saldos_proveedor
+
         for campo in ['fecha', 'saldo_anterior', 'pendiente_por_pagar']:
             validated_data.pop(campo, None)
 
@@ -345,21 +387,13 @@ class CuentaPorPagarSerializer(serializers.ModelSerializer):
         if instance.abonos < 0:
             raise serializers.ValidationError({'abonos': 'Los abonos no pueden ser negativos.'})
 
-        saldo_anterior = instance.proveedor.cuentaporpagar_set.exclude(pk=instance.pk).aggregate(
-            total=Sum('pendiente_por_pagar')
-        )['total'] or Decimal('0')
-
-        instance.saldo_anterior = saldo_anterior
-        instance.pendiente_por_pagar = instance.val_bruto + saldo_anterior - instance.abonos
+        # Valores temporales antes de recalcular
+        instance.saldo_anterior = Decimal('0')
+        instance.pendiente_por_pagar = Decimal('0')
         instance.save()
 
-        cuentas = CuentaPorPagar.objects.filter(proveedor=instance.proveedor).exclude(pk=instance.pk)
-        mas_reciente = cuentas.order_by('-fecha', '-n_cxp').first()
-
-        if not mas_reciente or instance.fecha > mas_reciente.fecha:
-            instance.proveedor.saldo = instance.pendiente_por_pagar
-            instance.proveedor.save()
-
+        # Recalcular historial completo
+        recalcular_saldos_proveedor(instance.proveedor.id)
         return instance
 
 class NotaCreditoSerializer(serializers.ModelSerializer):
@@ -369,3 +403,13 @@ class NotaCreditoSerializer(serializers.ModelSerializer):
         model = NotaCredito
         fields = ['id', 'cuenta', 'descripcion', 'creada']
         read_only_fields = ['id', 'creada']
+    
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        if rep.get('fecha'):
+            try:
+                fecha_obj = datetime.fromisoformat(rep['fecha'].replace('Z', '+00:00'))
+                rep['fecha'] = fecha_obj.strftime('%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                pass
+        return rep

@@ -45,11 +45,8 @@
   { "accion": "read_cxc",   "admin": true, "gerente": true, "sprempleado": true, "empleado": true },
 
   { "accion": "create_notacredito", "admin": true, "gerente": true, "sprempleado": false, "empleado": false },
-  { "accion": "update_notacredito", "admin": true, "gerente": true, "sprempleado": false, "empleado": false },
-  { "accion": "delete_notacredito", "admin": true, "gerente": true, "sprempleado": false, "empleado": false },
+  { "accion": "update_notacredito", "admin": true, "gerente": true, "sprempleado": false, "empleado": false },  { "accion": "delete_notacredito", "admin": true, "gerente": true, "sprempleado": false, "empleado": false },
   { "accion": "read_notacredito",   "admin": true, "gerente": true, "sprempleado": true,  "empleado": true },
-
-  { "accion": "recalcular_saldos", "admin": true, "gerente": true, "sprempleado": false, "empleado": false },
 
   { "accion": "exportar_cxc_fecha",           "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
   { "accion": "exportar_cxp_fecha",           "admin": true, "gerente": true, "sprempleado": true, "empleado": false },

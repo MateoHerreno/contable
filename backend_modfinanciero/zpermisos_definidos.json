@@ -1,0 +1,58 @@
+[
+  { "accion": "create_usuario", "admin": true, "gerente": true, "sprempleado": false, "empleado": false },
+  { "accion": "update_usuario", "admin": true, "gerente": true, "sprempleado": false, "empleado": false },
+  { "accion": "delete_usuario", "admin": true, "gerente": true, "sprempleado": false, "empleado": false },
+  { "accion": "read_usuario",   "admin": true, "gerente": true, "sprempleado": true,  "empleado": true },
+
+  { "accion": "create_empresa", "admin": true, "gerente": true, "sprempleado": false, "empleado": false },
+  { "accion": "update_empresa", "admin": true, "gerente": true, "sprempleado": false, "empleado": false },
+  { "accion": "delete_empresa", "admin": true, "gerente": true, "sprempleado": false, "empleado": false },
+  { "accion": "read_empresa",   "admin": true, "gerente": true, "sprempleado": true,  "empleado": true },
+
+  { "accion": "create_tienda", "admin": true, "gerente": true, "sprempleado": false, "empleado": false },
+  { "accion": "update_tienda", "admin": true, "gerente": true, "sprempleado": false, "empleado": false },
+  { "accion": "delete_tienda", "admin": true, "gerente": true, "sprempleado": false, "empleado": false },
+  { "accion": "read_tienda",   "admin": true, "gerente": true, "sprempleado": true,  "empleado": true },
+
+  { "accion": "create_proveedor", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "update_proveedor", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "delete_proveedor", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "read_proveedor",   "admin": true, "gerente": true, "sprempleado": true, "empleado": true },
+
+  { "accion": "create_cliente", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "update_cliente", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "delete_cliente", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "read_cliente",   "admin": true, "gerente": true, "sprempleado": true, "empleado": true },
+
+  { "accion": "create_conceptocxp", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "update_conceptocxp", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "delete_conceptocxp", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "read_conceptocxp",   "admin": true, "gerente": true, "sprempleado": true, "empleado": true },
+
+  { "accion": "create_conceptocxc", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "update_conceptocxc", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "delete_conceptocxc", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "read_conceptocxc",   "admin": true, "gerente": true, "sprempleado": true, "empleado": true },
+
+  { "accion": "create_cxp", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "update_cxp", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "delete_cxp", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "read_cxp",   "admin": true, "gerente": true, "sprempleado": true, "empleado": true },
+
+  { "accion": "create_cxc", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "update_cxc", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "delete_cxc", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "read_cxc",   "admin": true, "gerente": true, "sprempleado": true, "empleado": true },
+
+  { "accion": "create_notacredito", "admin": true, "gerente": true, "sprempleado": false, "empleado": false },
+  { "accion": "update_notacredito", "admin": true, "gerente": true, "sprempleado": false, "empleado": false },  { "accion": "delete_notacredito", "admin": true, "gerente": true, "sprempleado": false, "empleado": false },
+  { "accion": "read_notacredito",   "admin": true, "gerente": true, "sprempleado": true,  "empleado": true },
+
+  { "accion": "exportar_cxc_fecha",           "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "exportar_cxp_fecha",           "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "exportar_cxc_cliente_fecha",   "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "exportar_cxp_proveedor_fecha", "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+
+  { "accion": "ver_estres",      "admin": true, "gerente": true, "sprempleado": true, "empleado": false },
+  { "accion": "exportar_estres", "admin": true, "gerente": true, "sprempleado": false, "empleado": false }
+]

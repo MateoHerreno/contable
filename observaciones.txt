@@ -1,0 +1,31 @@
+-dentro de la creacion de cuentas deve existir el boton de realmente desea enviar
+la cxc y cxp? para hacer que el empleado obserbe bien los campos al enviarlos
+
+-en la vista de cxc se deve poner un cuadro dinamico que muestre el valor todal de el iva el valor que se va a guardar
+
+-en el front los formularios deveria poner comas automaticamente mientras se introducen los numeros
+
+admin@admin.com : 123456
+
+-para las descargas de pdf de cxc y cxp, se deven manejar las agrupaciones de fechas desde el frontend hay dos endpoints por cada 
+    provedores-fecha, fecha todas
+    clientes-fecha, fecha todas
+
+para los permisos, secreo un archivo persmisos.json y zpermisos.txt con el json los permisos se cargan automaticamente al hacer migrate/ con el permisos.txt
+es lo que se pone ejecutando python manage.py sell (copiar todo el archivo pegarlo en la terminal precionar enter y luego escribir exit())
+
+al crear una cxc negativa es importante en abonos decir -$$ si al cliente se le devolvio dinero, si no se le devolvio 0 ya que esto afecta el saldo de el cliente
+
+
+El sistema detecta el último mes cerrado basado en las fechas de CuentaPorCobrar y CuentaPorPagar.
+Si ya existe un EstadoResultadosMensual para ese periodo → se devuelve.
+Si no existe, se calcula dinámicamente y se guarda como el oficial de ese mes.
+
+
+
+gestionar el backup (aun no tengo)
+
+pendiente testear los endpoints de exports, 
+
+
+que tan importante son los nits para proveedor y cliente? validacion doble como en password? dever ser unico?

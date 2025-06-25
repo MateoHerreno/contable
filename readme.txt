@@ -6,7 +6,7 @@ https://github.com/MateoHerreno/contable.git
 
 
 encender entornor virtual
-windows: env\Scripts\activate
+windows: venv\Scripts\activate
 linux: source env/bin/activate
 
 
@@ -14,9 +14,6 @@ para arrancar el servidor navegar sotware_contable\contabilidad
 ejecutar 
 pip install -r requirements.txt
 python manage.py runserver   
-
-comits
-añadido
 
 estructura actual
 

@@ -325,3 +325,103 @@ def generar_pdf_estres(anio, mes):
     pdf.save()
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=True, filename=f'estres_{anio}_{mes}.pdf')
+
+
+#funciones para exportar a excel______________________________________________________________________________________
+def generar_excel_cxc(queryset, cliente=None):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Cuentas por Cobrar"
+
+    headers = [
+        "Fecha", "#CxC", "Cliente", "Concepto", "Bruto",
+        "IVA", "Retenciones", "Neto Facturado", "Saldo Ant.", "Abonos", "Pendiente"
+    ]
+    ws.append(headers)
+
+    for cuenta in queryset:
+        fila = [
+            cuenta.fecha.strftime('%Y-%m-%d'),
+            cuenta.n_cxc,
+            cuenta.cliente.nombre,
+            cuenta.conceptoFijo.nombre,
+            float(cuenta.val_bruto),
+            float(cuenta.iva),
+            float(cuenta.retenciones),
+            float(cuenta.neto_facturado),
+            float(cuenta.saldo_anterior),
+            float(cuenta.abonos),
+            float(cuenta.pendiente_por_pagar),
+        ]
+        ws.append(fila)
+
+    stream = BytesIO()
+    wb.save(stream)
+    stream.seek(0)
+    return stream
+
+def generar_excel_cxp(queryset, proveedor=None):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Cuentas por Pagar"
+
+    headers = [
+        "Fecha", "#CxP", "Proveedor", "Concepto", "Valor",
+        "Saldo Ant.", "Abonos", "Pendiente"
+    ]
+    ws.append(headers)
+
+    for cuenta in queryset:
+        fila = [
+            cuenta.fecha.strftime('%Y-%m-%d'),
+            cuenta.n_cxp,
+            cuenta.proveedor.nombre,
+            cuenta.conceptoFijo.nombre,
+            float(cuenta.val_bruto),
+            float(cuenta.saldo_anterior),
+            float(cuenta.abonos),
+            float(cuenta.pendiente_por_pagar),
+        ]
+        ws.append(fila)
+
+    stream = BytesIO()
+    wb.save(stream)
+    stream.seek(0)
+    return stream
+
+def generar_excel_estres(instancia):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Estado de Resultados"
+
+    ws.append(["Estado de Resultados", f"{instancia.mes}/{instancia.anio}"])
+    ws.append(["Fecha de generación", now().strftime('%Y-%m-%d %H:%M:%S')])
+    ws.append([])
+
+    def agregar_seccion(titulo, detalle, total):
+        ws.append([titulo])
+        for key, value in detalle.items():
+            ws.append(["", key, float(value)])
+        ws.append(["", "Total", float(total)])
+        ws.append([])
+
+    agregar_seccion("INGRESOS", instancia.ingresos_detalle, instancia.ingresos_total)
+    agregar_seccion("COSTOS DE OPERACIÓN", instancia.costos_operacion_detalle, instancia.costos_operacion_total)
+    ws.append(["", "UTILIDAD BRUTA", float(instancia.utilidad_bruta)])
+    ws.append([])
+
+    agregar_seccion("GASTOS ADMINISTRATIVOS", instancia.gastos_administrativos_detalle, instancia.gastos_administrativos_total)
+    ws.append(["", "UTILIDAD OPERACIONAL", float(instancia.utilidad_operacional)])
+    ws.append([])
+
+    agregar_seccion("OTROS COSTOS", instancia.otros_costos_detalle, instancia.otros_costos_total)
+    ws.append(["", "UTILIDAD ANTES DE IMPUESTOS", float(instancia.utilidad_antes_impuestos)])
+    ws.append([])
+
+    agregar_seccion("GASTOS POR IMPUESTOS", instancia.impuestos_detalle, instancia.gastos_impuestos)
+    ws.append(["", "UTILIDAD NETA", float(instancia.utilidad_neta)])
+
+    stream = BytesIO()
+    wb.save(stream)
+    stream.seek(0)
+    return stream

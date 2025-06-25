@@ -17,7 +17,7 @@ function App() {
         >
           Learn React
         </a>
-        <button className="btn btn-primary">boostrap</button>
+        <button className="btn btn-primary">dili</button>
       </header>
     </div>
   );

@@ -82,7 +82,7 @@ class Usuario(AbstractUser, PermissionsMixin):
 
 class Proveedor(models.Model):
     nombre = models.CharField(max_length=100)
-    nit = models.IntegerField( default=0)
+    nit = models.IntegerField(default=0, unique=True)
     telefono = models.CharField(max_length=20, default=0)
     saldo = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     def __str__(self):
@@ -90,7 +90,7 @@ class Proveedor(models.Model):
 
 class Cliente(models.Model):
     nombre = models.CharField(max_length=100)
-    nit = models.IntegerField(default=0)
+    nit = models.IntegerField(default=0, unique=True)
     telefono = models.CharField(max_length=20, default=0)
     saldo = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     def __str__(self):

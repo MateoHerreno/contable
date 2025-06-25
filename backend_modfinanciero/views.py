@@ -9,7 +9,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from django.http import FileResponse
+from django.http import FileResponse,HttpResponse
 from calendar import monthrange
 from datetime import datetime
 from io import BytesIO
@@ -17,6 +17,7 @@ from .serializers import *
 from .permissions import*
 from .models import*
 from .utils import *
+
 
 
 #desde aca es donde sale la documentacion de swagger   
@@ -34,7 +35,7 @@ class PerfilViewSet(viewsets.ModelViewSet):
     queryset = Perfil.objects.all()  
     serializer_class = PerfilSerializer
 
-    """ def get_permissions(self):
+    def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_usuario')()]
         elif self.action in ['update', 'partial_update']:
@@ -47,47 +48,47 @@ class PerfilViewSet(viewsets.ModelViewSet):
                 TienePermiso('delete_usuario')(),
                 NoEditarAdministradores()
             ]
-        return [TienePermiso('read_usuario')()]"""
+        return [TienePermiso('read_usuario')()]
 
 class EmpresaViewSet(viewsets.ModelViewSet):
     queryset = Empresa.objects.all()
     serializer_class = EmpresaSerializer
 
-    """def get_permissions(self):
+    def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_empresa')()]
         elif self.action in ['update', 'partial_update']:
             return [TienePermiso('update_empresa')()]
         elif self.action == 'destroy':
             return [TienePermiso('delete_empresa')()]
-        return [TienePermiso('read_empresa')()]"""
+        return [TienePermiso('read_empresa')()]
 
 class TiendaViewSet(viewsets.ModelViewSet):
     queryset = Tienda.objects.all()
     serializer_class = TiendaSerializer
 
-    """def get_permissions(self):
+    def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_tienda')()]
         elif self.action in ['update', 'partial_update']:
             return [TienePermiso('update_tienda')()]
         elif self.action == 'destroy':
             return [TienePermiso('delete_tienda')()]
-        return [TienePermiso('read_tienda')()]"""
+        return [TienePermiso('read_tienda')()]
 
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
 
-    """def get_queryset(self):
+    def get_queryset(self):
         # Solo ver usuarios de rol inferior
         return filtrar_queryset_por_rol(
             super().get_queryset(),
             self.request.user,
             campo_rol='rol'  # Usuario.rol directamente
-        )"""
+        )
 
-    """def get_permissions(self):
+    def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_usuario')()]
         elif self.action in ['update', 'partial_update']:
@@ -100,52 +101,52 @@ class UsuarioViewSet(viewsets.ModelViewSet):
                 TienePermiso('delete_usuario')(),
                 NoEditarAdministradores()
             ]
-        return [TienePermiso('read_usuario')()]"""
+        return [TienePermiso('read_usuario')()]
 
 class ProveedorViewSet(viewsets.ModelViewSet):
     queryset = Proveedor.objects.all()
     serializer_class = ProveedorSerializer
 
-    """def get_permissions(self):
+    def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_proveedor')()]
         elif self.action in ['update', 'partial_update']:
             return [TienePermiso('update_proveedor')()]
         elif self.action == 'destroy':
             return [TienePermiso('delete_proveedor')()]
-        return [TienePermiso('read_proveedor')()]"""
+        return [TienePermiso('read_proveedor')()]
 
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.all()
     serializer_class = ClienteSerializer
 
-    """def get_permissions(self):
+    def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_cliente')()]
         elif self.action in ['update', 'partial_update']:
             return [TienePermiso('update_cliente')()]
         elif self.action == 'destroy':
             return [TienePermiso('delete_cliente')()]
-        return [TienePermiso('read_cliente')()]"""
+        return [TienePermiso('read_cliente')()]
 
 class ConceptoCXPViewSet(viewsets.ModelViewSet):
     queryset = ConceptoCXP.objects.all()
     serializer_class = ConceptoCXPSerializer
 
-    """def get_permissions(self):
+    def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_conceptocxp')()]
         elif self.action in ['update', 'partial_update']:
             return [TienePermiso('update_conceptocxp')()]
         elif self.action == 'destroy':
             return [TienePermiso('delete_conceptocxp')()]
-        return [TienePermiso('read_conceptocxp')()]"""
+        return [TienePermiso('read_conceptocxp')()]
 
 class ConceptoCXCViewSet(viewsets.ModelViewSet):
     queryset = ConceptoCXC.objects.all()
     serializer_class = ConceptoCXCSerializer
 
-    """ def get_permissions(self):
+    def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_conceptocxc')()]
         elif self.action in ['update', 'partial_update']:
@@ -153,13 +154,13 @@ class ConceptoCXCViewSet(viewsets.ModelViewSet):
         elif self.action == 'destroy':
             return [TienePermiso('delete_conceptocxc')()]
         return [TienePermiso('read_conceptocxc')()]
-    """
+   
 
 class CuentaPorPagarViewSet(viewsets.ModelViewSet):
     queryset = CuentaPorPagar.objects.all()
     serializer_class = CuentaPorPagarSerializer
 
-    """def get_permissions(self):
+    def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_cxp')()]
         elif self.action in ['update', 'partial_update']:
@@ -167,33 +168,33 @@ class CuentaPorPagarViewSet(viewsets.ModelViewSet):
         elif self.action == 'destroy':
             return [TienePermiso('delete_cxp')()]
         return [TienePermiso('read_cxp')()]
-"""
+
 
 class CuentaPorCobrarViewSet(viewsets.ModelViewSet):
     queryset = CuentaPorCobrar.objects.all()
     serializer_class = CuentaPorCobrarSerializer
 
-    """def get_permissions(self):
+    def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_cxc')()]
         elif self.action in ['update', 'partial_update']:
             return [TienePermiso('update_cxc')()]
         elif self.action == 'destroy':
             return [TienePermiso('delete_cxc')()]
-        return [TienePermiso('read_cxc')()]"""
+        return [TienePermiso('read_cxc')()]
 
 class NotaCreditoViewSet(viewsets.ModelViewSet):
     queryset = NotaCredito.objects.select_related('cuenta').all()
     serializer_class = NotaCreditoSerializer
 
-    """def get_permissions(self):
+    def get_permissions(self):
         if self.action == 'create':
             return [TienePermiso('create_notacredito')()]
         elif self.action in ['update', 'partial_update']:
             return [TienePermiso('update_notacredito')()]
         elif self.action == 'destroy':
             return [TienePermiso('delete_notacredito')()]
-        return [TienePermiso('read_notacredito')()]"""
+        return [TienePermiso('read_notacredito')()]
 
 class PasswordReset(APIView):
     permission_classes = [AllowAny]
@@ -221,7 +222,7 @@ class SolicitudRecuperacion(APIView):
         return Response({'mensaje': 'Token de recuperación enviado a tu email.'}, status=status.HTTP_200_OK)
 
 class ExportarCxcPorFecha(APIView):
-    #permission_classes = [IsAuthenticated, TienePermiso('exportar_cxc_fecha')]
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_cxc_fecha')]
     def post(self, request):
         fecha_inicio = request.data.get('fecha_inicio')
         fecha_fin = request.data.get('fecha_fin')
@@ -239,7 +240,7 @@ class ExportarCxcPorFecha(APIView):
         return generar_pdf_cxc(cuentas, cliente=None)
     
 class ExportarCxcPorClienteYFecha(APIView):
-    #permission_classes = [IsAuthenticated, TienePermiso('exportar_cxc_cliente_fecha')]
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_cxc_cliente_fecha')]
     def post(self, request):
         cliente_id = request.data.get('cliente')
         fecha_inicio = request.data.get('fecha_inicio')
@@ -263,7 +264,7 @@ class ExportarCxcPorClienteYFecha(APIView):
         return generar_pdf_cxc(cuentas, cliente)
 
 class ExportarCxpPorFecha(APIView):
-    #permission_classes = [IsAuthenticated, TienePermiso('exportar_cxp_fecha')]
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_cxp_fecha')]
     def post(self, request):
         fecha_inicio = request.data.get('fecha_inicio')
         fecha_fin = request.data.get('fecha_fin')
@@ -281,7 +282,7 @@ class ExportarCxpPorFecha(APIView):
         return generar_pdf_cxp(cuentas, proveedor=None)
     
 class ExportarCxpPorProveedorYFecha(APIView):
-    #permission_classes = [IsAuthenticated, TienePermiso('exportar_cxp_proveedor_fecha')]
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_cxp_proveedor_fecha')]
     def post(self, request):
         proveedor_id = request.data.get('proveedor')
         fecha_inicio = request.data.get('fecha_inicio')
@@ -305,7 +306,7 @@ class ExportarCxpPorProveedorYFecha(APIView):
         return generar_pdf_cxp(cuentas, proveedor)
     
 class EstadoResultados(APIView):
-    #permission_classes = [IsAuthenticated, TienePermiso('ver_estres')]
+    permission_classes = [IsAuthenticated, TienePermiso('ver_estres')]
 
     def get(self, request):
         hoy = datetime.now().date()
@@ -446,3 +447,104 @@ class ExportarEstresFecha(APIView):
             return Response({'error': 'No se encontró estado de resultados para ese periodo.'}, status=404)
 
         return generar_pdf_estres(estado, anio, mes)
+
+class ExportarExcelCxcPorFecha(APIView):
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_excel_cxc_fecha')()]
+    def post(self, request):
+        fecha_inicio = request.data.get('fecha_inicio')
+        fecha_fin = request.data.get('fecha_fin')
+
+        if not fecha_inicio or not fecha_fin:
+            return Response({'error': 'Debe enviar "fecha_inicio" y "fecha_fin".'}, status=400)
+
+        cuentas = CuentaPorCobrar.objects.filter(fecha__range=[fecha_inicio, fecha_fin])
+        if not cuentas.exists():
+            return Response({'error': 'No se encontraron cuentas en el rango indicado.'}, status=404)
+
+        excel_file = generar_excel_cxc(cuentas)
+        response = HttpResponse(excel_file, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=cuentas_por_cobrar.xlsx'
+        return response
+
+class ExportarExcelCxcPorClienteYFecha(APIView):
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_excel_cxc_cliente_fecha')()]
+    def post(self, request):
+        cliente_id = request.data.get('cliente')
+        fecha_inicio = request.data.get('fecha_inicio')
+        fecha_fin = request.data.get('fecha_fin')
+
+        if not cliente_id or not fecha_inicio or not fecha_fin:
+            return Response({'error': 'Debe enviar cliente, fecha_inicio y fecha_fin.'}, status=400)
+
+        cliente = Cliente.objects.filter(id=cliente_id).first()
+        if not cliente:
+            return Response({'error': 'Cliente no encontrado.'}, status=404)
+
+        cuentas = CuentaPorCobrar.objects.filter(cliente=cliente, fecha__range=[fecha_inicio, fecha_fin])
+        if not cuentas.exists():
+            return Response({'error': 'No se encontraron cuentas para el cliente en el rango indicado.'}, status=404)
+
+        excel_file = generar_excel_cxc(cuentas, cliente=cliente)
+        response = HttpResponse(excel_file, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=cuentas_por_cobrar_cliente.xlsx'
+        return response
+
+class ExportarExcelCxpPorFecha(APIView):
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_excel_cxp_fecha')()]
+    def post(self, request):
+        fecha_inicio = request.data.get('fecha_inicio')
+        fecha_fin = request.data.get('fecha_fin')
+
+        if not fecha_inicio or not fecha_fin:
+            return Response({'error': 'Debe enviar "fecha_inicio" y "fecha_fin".'}, status=400)
+
+        cuentas = CuentaPorPagar.objects.filter(fecha__range=[fecha_inicio, fecha_fin])
+        if not cuentas.exists():
+            return Response({'error': 'No se encontraron cuentas por pagar en el rango indicado.'}, status=404)
+
+        excel_file = generar_excel_cxp(cuentas)
+        response = HttpResponse(excel_file, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=cuentas_por_pagar.xlsx'
+        return response
+
+class ExportarExcelCxpPorProveedorYFecha(APIView):
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_excel_cxp_proveedor_fecha')()]
+    def post(self, request):
+        proveedor_id = request.data.get('proveedor')
+        fecha_inicio = request.data.get('fecha_inicio')
+        fecha_fin = request.data.get('fecha_fin')
+
+        if not proveedor_id or not fecha_inicio or not fecha_fin:
+            return Response({'error': 'Debe enviar proveedor, fecha_inicio y fecha_fin.'}, status=400)
+
+        proveedor = Proveedor.objects.filter(id=proveedor_id).first()
+        if not proveedor:
+            return Response({'error': 'Proveedor no encontrado.'}, status=404)
+
+        cuentas = CuentaPorPagar.objects.filter(proveedor=proveedor, fecha__range=[fecha_inicio, fecha_fin])
+        if not cuentas.exists():
+            return Response({'error': 'No se encontraron cuentas para el proveedor en el rango indicado.'}, status=404)
+
+        excel_file = generar_excel_cxp(cuentas, proveedor=proveedor)
+        response = HttpResponse(excel_file, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=cuentas_por_pagar_proveedor.xlsx'
+        return response
+
+class ExportarExcelEstres(APIView):
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_excel_estres')()]
+    def post(self, request):
+        anio = request.data.get('anio')
+        mes = request.data.get('mes')
+
+        if not anio or not mes:
+            return Response({'error': 'Debe enviar anio y mes.'}, status=400)
+
+        try:
+            instancia = EstadoResultadosMensual.objects.get(anio=anio, mes=mes)
+        except EstadoResultadosMensual.DoesNotExist:
+            return Response({'error': 'No se encontró estado de resultados para ese periodo.'}, status=404)
+
+        excel_file = generar_excel_estres(instancia)
+        response = HttpResponse(excel_file, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=estado_resultados.xlsx'
+        return response

@@ -38,6 +38,12 @@ urlpatterns = [
     path('api/pdfcxcclif/', ExportarCxcPorClienteYFecha.as_view(), name='pdfcxcclientefecha'),
     path('api/pdfcxpclif/', ExportarCxpPorProveedorYFecha.as_view(), name='pdfcxpclientefecha'),
     path('api/pdfestres/', ExportarEstresFecha.as_view(), name='pdfestres'), 
+    #url de exports exels
+    path('api/excelcxcfecha/', ExportarExcelCxcPorFecha.as_view(), name='excelcxcfecha'),
+    path('api/excelcxcclif/', ExportarExcelCxcPorClienteYFecha.as_view(), name='excelcxcclientefecha'),
+    path('api/excelcxpfecha/', ExportarExcelCxpPorFecha.as_view(), name='excelcxpfecha'),
+    path('api/excelcxpclif/', ExportarExcelCxpPorProveedorYFecha.as_view(), name='excelcxpproveedorfecha'),
+    path('api/excelestres/', ExportarExcelEstres.as_view(), name='excelestres'),
 ]
 
 

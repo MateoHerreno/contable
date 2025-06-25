@@ -1,21 +1,28 @@
- 
-instalar enviroment
-python -m venv venv
-clonar
-https://github.com/MateoHerreno/contable.git
+__________________________________________________________________________
 
+como prerequisito instale:
+python https://www.python.org/downloads/   
+procure una version superior a 3.12.0 y ejecutelo para instalarlo
+nvm desde https://github.com/coreybutler/nvm-windows/releases  
+el archivo setup.exe y ejecutelo para instalarlo
+__________________________________________________________________________
 
-encender entornor virtual
-windows: venv\Scripts\activate
-linux: source env/bin/activate
+en la carpeta de este git descargue solo el archivo
+start_1.bat y ejecuteloa continuacion ese archivo creara la carpeta
+de destino contabilidad.django y descargara el repositorio 
+__________________________________________________________________________
 
+abra la carpeta y busque el archivo 
+start_2.bat y ejecutelo ese archivo instalara los paquetes y herramientas
+nesesarias para que el software inicie de modo satisfactorio
+__________________________________________________________________________
 
-para arrancar el servidor navegar sotware_contable\contabilidad
-ejecutar 
-pip install -r requirements.txt
-python manage.py runserver   
+para inicar el software desepues de los pasos anteriores ubique el archivo
+start_3.bat y ejecutelo, este creara dos ventanas de cmd y correra los 
+servidores de backend django y frontend react.
+__________________________________________________________________________
 
-estructura actual
+estructura encarpetado
 
 contabilidad_django/
   |

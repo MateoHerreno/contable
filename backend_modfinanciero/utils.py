@@ -29,7 +29,8 @@ def enviar_email_recuperacion(email, token):
         f"Tu token de recuperación es:\n\n"
         f"{token}\n\n"
         f"Utiliza este token para cambiar tu contraseña en la aplicación.\n\n"
-        f"Tambien puedes ir a la url... http://127.0.0.1:8000/api/passwordReset/ \n\n"
+        f"Tambien puedes ir a la url... \n\n"
+        f"http://localhost:3000/restablecer?email={email}&token={token}\n\n"
         f"¡Gracias!"
     )
     from_email = None  # usa el DEFAULT_FROM_EMAIL en "contable/contabilidad/contabilidad/setings.py"

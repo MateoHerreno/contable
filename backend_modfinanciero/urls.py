@@ -2,7 +2,7 @@ from django.urls import path,include
 from rest_framework import routers
 from .import views
 from .views import *
-from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView, TokenVerifyView
 
 
 router = routers.DefaultRouter()
@@ -29,6 +29,7 @@ urlpatterns = [
     #urls de login
     path('api/token/', TokenObtainPairView.as_view(), name='token'),
     path('api/refresh/', TokenRefreshView.as_view(), name='refresh'),
+    path("api/verify/", TokenVerifyView.as_view(), name="token_verify"),
     #urls de recueperacion de contraseña
     path('api/passrequest/', SolicitudRecuperacion.as_view(), name='passrequest'), 
     path('api/passreset/', PasswordReset.as_view(), name='passreset'), 

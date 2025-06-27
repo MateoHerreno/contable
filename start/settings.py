@@ -10,6 +10,8 @@ DEBUG = config('DEBUG')
 
 ALLOWED_HOSTS = []
 
+CORS_ALLOW_ALL_ORIGINS = True
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -21,16 +23,20 @@ INSTALLED_APPS = [
     'backend_modfinanciero',
     'rest_framework',
     'drf_yasg',
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'start.urls'
@@ -95,6 +101,7 @@ AUTH_PROFILE_MODULE = "backend_modfinanciero.Usuario"
 
 #login requerido o no!
 
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',  # Por defecto requiere estar logueado
@@ -103,7 +110,6 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
-
 """
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (),
@@ -131,7 +137,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 #configuracion por defecto de los tokens jwt
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),   #  Media hora
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),   #  Media hora
     'REFRESH_TOKEN_LIFETIME': timedelta(hours=1),     #  Una hora
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,

@@ -14,49 +14,8 @@ admin@admin.com : 123456
 para los permisos, secreo un archivo persmisos.json y zpermisos.txt con el json los permisos se cargan automaticamente al hacer migrate/ con el permisos.txt
 es lo que se pone ejecutando python manage.py sell (copiar todo el archivo pegarlo en la terminal precionar enter y luego escribir exit())
 
-
 gestionar el backup (aun no tengo)
  
 
-
 pip freeze > requirements.txt
 venv\Scripts\activate
-
-frontend_modfinanciero/
-└── src/
-    ├── components/              # Componentes reutilizables
-    │   ├── Header.jsx
-    │   ├── Footer.jsx
-    │   ├── NavBar.jsx
-    │   └── ProtectedLayout.jsx  # Layout con autenticación y permisos
-    │
-    ├── views/                   # Vistas por módulo (pantallas completas)
-    │   ├── Login.jsx
-    │   ├── Logout.jsx
-    │   ├── Dashboard.jsx
-    │   ├── CXC/
-    │   │   └── CuentasPorCobrar.jsx
-    │   ├── CXP/
-    │   │   └── CuentasPorPagar.jsx
-    │   ├── Usuarios/
-    │   │   └── Usuarios.jsx
-    │   ├── Clientes/
-    │   │   └── Clientes.jsx
-    │   ├── Proveedores/
-    │   │   └── Proveedores.jsx
-    │   ├── EmpresaTiendas/
-    │   │   └── EmpresaTiendas.jsx
-    │   └── EstadoResultados/
-    │       └── EstadoResultados.jsx
-    │
-    ├── routes/
-    │   └── AppRoutes.jsx        # Todas las rutas centralizadas
-    │
-    ├── permissions/
-    │   └── zpermisos.js         # Tabla JS para control de permisos
-    │
-    ├── services/
-    │   └── api.js               # Axios configurado con token
-    │
-    ├── App.jsx
-    └── main.jsx

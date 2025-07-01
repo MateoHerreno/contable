@@ -1,3 +1,4 @@
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 from .models import *
 from decimal import Decimal, ROUND_HALF_UP
@@ -11,10 +12,15 @@ class PerfilSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class EmpresaSerializer(serializers.ModelSerializer):
-    perfiles = serializers.PrimaryKeyRelatedField(many=True,queryset=Perfil.objects.all())
+    perfiles_nombres = serializers.SerializerMethodField()
+
     class Meta:
         model = Empresa
         fields = '__all__'
+        extra_fields = ['perfiles_nombres']
+
+    def get_perfiles_nombres(self, obj):
+        return [p.nombre for p in obj.perfiles.all()]
 
 class TiendaSerializer(serializers.ModelSerializer):
     cantidad_usuarios = serializers.SerializerMethodField()
@@ -29,6 +35,11 @@ class UsuarioSerializer(serializers.ModelSerializer):
         write_only=True,
         label="confirm password",
         required=False  # Solo se validará si es necesario
+    )
+    tienda = serializers.PrimaryKeyRelatedField(
+        queryset=Tienda.objects.all(),
+        required=False,
+        allow_null=True
     )
 
     class Meta:
@@ -413,3 +424,16 @@ class NotaCreditoSerializer(serializers.ModelSerializer):
             except ValueError:
                 pass
         return rep
+    
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        # Obtener los tokens base
+        data = super().validate(attrs)
+
+        # Añadir datos adicionales
+        data.update({
+            'rol': self.user.rol,
+            'nombre': self.user.nombre,
+        })
+
+        return data

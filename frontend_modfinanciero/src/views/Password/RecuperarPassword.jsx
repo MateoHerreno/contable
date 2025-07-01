@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import axios from 'axios';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
+import {api} from '../../services/connection';
 
 export default function RecuperarPassword() {
     const [email, setEmail] = useState('');
@@ -8,7 +10,7 @@ export default function RecuperarPassword() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://127.0.0.1:8000/api/passrequest/', { email });
+            await api.post('passrequest/', { email });
             setMensaje({ tipo: 'success', texto: 'Revisa tu correo para continuar con la recuperación.' });
         } catch {
             setMensaje({ tipo: 'danger', texto: 'No se pudo procesar la solicitud.' });
@@ -18,7 +20,7 @@ export default function RecuperarPassword() {
     return (
         <div className="d-flex flex-column min-vh-100">
             {/* Franja azul superior */}
-            <div className="bg-primary py-3"></div>
+            <Header />
 
             {/* Contenido centrado */}
             <div className="flex-fill d-flex justify-content-center align-items-center bg-white">
@@ -61,8 +63,8 @@ export default function RecuperarPassword() {
                 </div>
             </div>
 
-            {/* Franja azul inferior */}
-            <div className="bg-primary py-3 mt-auto"></div>
+            
+              <Footer />
         </div>
     );
 }

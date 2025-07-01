@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
+import {api} from '../../services/connection';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -12,7 +14,7 @@ export default function Login() {
         e.preventDefault();
 
         try {
-            const response = await axios.post('http://localhost:8000/api/token/', {
+            const response = await api.post('token/', {
                 email: email,
                 password: password,
             });
@@ -20,17 +22,19 @@ export default function Login() {
             // Guardar tokens
             localStorage.setItem('access_token', response.data.access);
             localStorage.setItem('refresh_token', response.data.refresh);
+            localStorage.setItem('access_rol', response.data.rol);
+            localStorage.setItem('access_nombre', response.data.nombre);
 
             setError(null);
             navigate('/dashboard');
         } catch (err) {
-            setError('Credenciales incorrectas o error de conexión.');
+            setError('Error al iniciar session; revise los datos de inicio o su coneccion.');
         }
     };
 
     return (
         <div className="d-flex flex-column min-vh-100">
-            <div className="bg-primary py-3"></div>
+            <Header />
 
             <div className="flex-fill d-flex justify-content-center align-items-center bg-white">
                 <div className="card shadow p-4" style={{ minWidth: '320px', maxWidth: '400px', width: '100%' }}>
@@ -73,7 +77,7 @@ export default function Login() {
                 </div>
             </div>
 
-            <div className="bg-primary py-3 mt-auto"></div>
+              <Footer />
         </div>
     );
 }

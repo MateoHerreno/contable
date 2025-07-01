@@ -45,7 +45,15 @@ contabilidad_django/
   |
   ├── frontend__modfinanciero/ 
   │   ├── > node_modules
-  │   ├── > src        
+  │   ├── > public
+  │   ├── src /
+  |   |    ├── components  
+  |   |    ├── routes
+  |   |    ├── services 
+  |   |    ├── views  
+  |   |    ├── app.js  
+  |   |    ├── index.js   
+  |   |    └── index.css   
   │   ├── .gitignore           #cosas para ignorar en git
   │   ├── package-lockson.json          
   │   ├── package.json              

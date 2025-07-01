@@ -8,7 +8,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 @admin.register(Perfil)
 class PerfilAdmin(admin.ModelAdmin):
-    list_display = ['nombre']
+    list_display = ['nombre','id']
     search_fields = ['nombre']
     ordering = ('id',)
 

@@ -137,14 +137,14 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 #configuracion por defecto de los tokens jwt
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),   #  Media hora
-    'REFRESH_TOKEN_LIFETIME': timedelta(hours=1),     #  Una hora
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=9),   #  minutos
+    'REFRESH_TOKEN_LIFETIME': timedelta(hours=2),     # horas
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
 
     'ALGORITHM': config('ALGORITHM'),
     'SIGNING_KEY': SECRET_KEY,
 
-    'AUTH_HEADER_TYPES': ('AZ',), # este es el prefijo antes de enviar el token key de acces
+    'AUTH_HEADER_TYPES': ('Bearer',), # este es el prefijo antes de enviar el token key de acces
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }

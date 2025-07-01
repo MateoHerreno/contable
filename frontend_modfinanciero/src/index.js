@@ -1,9 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import App from './App';
-import 'bootstrap/dist/css/bootstrap.min.css';  // ✅ Importar Bootstrap
-import './index.css'; // tus estilos adicionales, si tienes
+import AppRoutes from './routes/AppRoutes';
+import 'bootstrap/dist/css/bootstrap.min.css';  
+
+export default function App() {
+  return <AppRoutes />;
+}
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

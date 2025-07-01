@@ -137,7 +137,7 @@ class ConceptoCXC(models.Model):
 class CuentaPorPagar(models.Model):
     fecha = models.DateTimeField(default = timezone.now)
     n_cxp =  models.AutoField(primary_key=True)
-    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.PROTECT)
     conceptoFijo = models.ForeignKey(ConceptoCXP, on_delete=models.PROTECT)
     conceptoDetalle = models.TextField(null=False, default=1)
     val_bruto = models.DecimalField(max_digits=15, decimal_places=2, validators=[MinValueValidator(0)])
@@ -151,7 +151,7 @@ class CuentaPorPagar(models.Model):
 class CuentaPorCobrar(models.Model):
     fecha = models.DateTimeField(default=timezone.now)
     n_cxc = models.AutoField(primary_key=True)
-    cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
     conceptoFijo = models.ForeignKey(ConceptoCXC, on_delete=models.PROTECT)
     conceptoDetalle = models.TextField(blank=True, null=True)  # obligatorio
     val_bruto = models.DecimalField(max_digits=15, decimal_places=2,)

@@ -1,5 +1,6 @@
 
 from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
 from rest_framework import viewsets,status
 from rest_framework.views import APIView
@@ -17,6 +18,7 @@ from .serializers import *
 from .permissions import*
 from .models import*
 from .utils import *
+
 
 
 
@@ -155,7 +157,6 @@ class ConceptoCXCViewSet(viewsets.ModelViewSet):
             return [TienePermiso('delete_conceptocxc')()]
         return [TienePermiso('read_conceptocxc')()]
    
-
 class CuentaPorPagarViewSet(viewsets.ModelViewSet):
     queryset = CuentaPorPagar.objects.all()
     serializer_class = CuentaPorPagarSerializer
@@ -168,7 +169,6 @@ class CuentaPorPagarViewSet(viewsets.ModelViewSet):
         elif self.action == 'destroy':
             return [TienePermiso('delete_cxp')()]
         return [TienePermiso('read_cxp')()]
-
 
 class CuentaPorCobrarViewSet(viewsets.ModelViewSet):
     queryset = CuentaPorCobrar.objects.all()
@@ -432,7 +432,7 @@ class EstadoResultados(APIView):
         }
 
 class ExportarEstresFecha(APIView):
-    #permission_classes = [IsAuthenticated, TienePermiso('exportar_estres')]
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_estres')]
 
     def post(self, request):
         anio = request.data.get('anio')
@@ -548,3 +548,6 @@ class ExportarExcelEstres(APIView):
         response = HttpResponse(excel_file, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename=estado_resultados.xlsx'
         return response
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer

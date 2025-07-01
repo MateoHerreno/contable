@@ -1,16 +1,31 @@
+import React, { useEffect, useState } from 'react';
 
-export default function Dashboard() {
+const Dashboard = () => {
+  const [visible, setVisible] = useState(true);
+  const nombre = localStorage.getItem('access_nombre') || 'Usuario';
+
+  useEffect(() => {
+    // Ocultar automáticamente después de 5 segundos
+    const timer = setTimeout(() => setVisible(false), 15000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <div className="d-flex flex-column min-vh-100">
-      <main className="flex-fill container mt-4">
-        <h2>Bienvenido al Dashboard</h2>
-        <p className="lead">Aquí puedes acceder a las secciones del sistema contable.</p>
-        <ul>
-          <li>Consultar cuentas por cobrar y pagar</li>
-          <li>Administrar clientes y proveedores</li>
-          <li>Generar estado de resultados</li>
-        </ul>
-      </main>
+    <div className="container mt-4">
+      {visible && (
+        <div className="alert alert-info alert-dismissible fade show" role="alert">
+          ¡Bienvenido, <strong>{nombre}</strong>! 👋
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setVisible(false)}
+            aria-label="Cerrar"
+          ></button>
+        </div>
+      )}
+      <p className="text-muted">Este es tu panel de control general.</p>
     </div>
   );
-}
+};
+
+export default Dashboard;

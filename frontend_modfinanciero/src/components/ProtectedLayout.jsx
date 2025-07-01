@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
+import {api} from '../services/connection';
 import Header from './Header';
 import NavBar from './NavBar';
 import Footer from './Footer';
-import axios from 'axios';
 
 export default function ProtectedLayout() {
   const [isValid, setIsValid] = useState(null); // null = validando, true = ok, false = inválido
@@ -18,7 +18,7 @@ export default function ProtectedLayout() {
       }
 
       try {
-        await axios.post('http://localhost:8000/api/verify/', {
+        await api.post('verify/', {
           token: token,
         });
         setIsValid(true);

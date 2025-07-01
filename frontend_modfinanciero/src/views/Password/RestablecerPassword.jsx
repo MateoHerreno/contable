@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useSearchParams, Link } from 'react-router-dom';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
+import {api} from '../../services/connection';
 
 export default function RestablecerPassword() {
     const [searchParams] = useSearchParams();
@@ -38,7 +40,7 @@ export default function RestablecerPassword() {
         }
 
         try {
-            await axios.post('http://127.0.0.1:8000/api/passreset/', form);
+            await api.post('passreset/', form);
             setMensaje({ tipo: 'success', texto: '✅ Contraseña restablecida correctamente.' });
             setExito(true);
 
@@ -56,7 +58,7 @@ export default function RestablecerPassword() {
     return (
         <div className="d-flex flex-column min-vh-100">
             {/* Franja azul superior */}
-            <div className="bg-primary py-3"></div>
+            <Header />
 
             {/* Contenido centrado */}
             <div className="flex-fill d-flex justify-content-center align-items-center bg-white">
@@ -143,8 +145,7 @@ export default function RestablecerPassword() {
                 </div>
             </div>
 
-            {/* Franja azul inferior */}
-            <div className="bg-primary py-3 mt-auto"></div>
+              <Footer />
         </div>
     );
 }

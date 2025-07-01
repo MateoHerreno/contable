@@ -20,7 +20,7 @@ def crear_conceptos_fijos(sender, **kwargs):
 
 @receiver(post_migrate)
 def cargar_permisos_definidos(sender, **kwargs):
-    ruta = os.path.join(settings.BASE_DIR, 'modulo_financiero', 'zpermisos_definidos.json')
+    ruta = os.path.join(settings.BASE_DIR, 'backend_modfinanciero', 'zpermisos_definidos.json')
     if os.path.exists(ruta):
         with open(ruta, 'r', encoding='utf-8') as f:
             permisos = json.load(f)

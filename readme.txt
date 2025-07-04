@@ -47,13 +47,55 @@ contabilidad_django/
   │   ├── > node_modules
   │   ├── > public
   │   ├── src /
-  |   |    ├── components  
+  |   |    ├── components
+  |   |    |     ├── AlertAutohide.jsx   
+  |   |    |     ├── ConfirmModal.jsx   
+  |   |    |     ├── EntityModal.jsx   
+  |   |    |     ├── footer.jsx   
+  |   |    |     ├── Header.jsx   
+  |   |    |     ├── NavBar.jsx   
+  |   |    |     ├── ProtectedLayout.jsx   
+  |   |    |     └── ProtectedRoute.jsx   
   |   |    ├── routes
-  |   |    ├── services 
-  |   |    ├── views  
-  |   |    ├── app.js  
-  |   |    ├── index.js   
-  |   |    └── index.css   
+  |   |    |     └── AppRoutes.jsx  
+  |   |    ├── services
+  |   |    |     ├── clienteServie.js
+  |   |    |     ├── cuentasPorCobrarServie.js
+  |   |    |     ├── cuentasPorPagarServie.js
+  |   |    |     ├── empresaServie.js
+  |   |    |     ├── estadoResultadoServie.js
+  |   |    |     ├── proveedorServie.js
+  |   |    |     ├── tiendaServie.js
+  |   |    |     └── usuarioServie.js
+  |   |    ├── utils
+  |   |    |     ├── connction.js 
+  |   |    |     ├── handleApiError.js 
+  |   |    |     └── limpiarPayLoad.js 
+  |   |    ├── views
+  |   |    |     ├── Clientes 
+  |   |    |     |     └── Clientes.jsx 
+  |   |    |     ├── CXC
+  |   |    |     |     └── CuentasPorCobrar.jsx  
+  |   |    |     ├── CXP 
+  |   |    |     |     └── CuentasPorPagar.jsx 
+  |   |    |     ├── Dashboard
+  |   |    |     |     └── Dashboard.jsx  
+  |   |    |     ├── Empresa
+  |   |    |     |     └── Empresa.jsx 
+  |   |    |     ├── EstadoResultado
+  |   |    |     |     └── EstadoResultado.jsx 
+  |   |    |     ├── Login 
+  |   |    |     |     └── Login.jsx 
+  |   |    |     ├── Password
+  |   |    |     |     ├── RecuperarPassword.jsx 
+  |   |    |     |     └── RestablecerPassword.jsx 
+  |   |    |     ├── Proveedores
+  |   |    |     |     └── Proveedores.jsx 
+  |   |    |     ├── Tiendas
+  |   |    |     |     └── Tiendas.jsx 
+  |   |    |     └── Usuarios 
+  |   |    |           └── Usuarios.jsx 
+  |   |    └── index.js   
   │   ├── .gitignore           #cosas para ignorar en git
   │   ├── package-lockson.json          
   │   ├── package.json              

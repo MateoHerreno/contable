@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
-import {api} from '../services/connection';
+import {api} from '../utils/connection';
 import Header from './Header';
 import NavBar from './NavBar';
 import Footer from './Footer';

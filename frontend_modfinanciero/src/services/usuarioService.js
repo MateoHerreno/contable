@@ -1,4 +1,4 @@
-import {api} from './connection';
+import { api } from '../utils/connection';
 
 export const getUsuarios = () => api.get('usuarios/');
 export const getUsuario = (id) => api.get(`usuarios/${id}/`);

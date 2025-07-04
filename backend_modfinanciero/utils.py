@@ -1,17 +1,22 @@
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
+from django.utils.timezone import make_aware
 from django.core.mail import send_mail
 from django.utils.timezone import now
 from django.http import FileResponse
 from django.db.models import Sum
 from django.db.models import *
+from calendar import monthrange
+from datetime import datetime
 from decimal import Decimal
 from io import BytesIO
 from .models import *
+import openpyxl
 import secrets
 import pytz
 bogota_tz = pytz.timezone('America/Bogota')
+
 
 
 
@@ -426,3 +431,70 @@ def generar_excel_estres(instancia):
     wb.save(stream)
     stream.seek(0)
     return stream
+
+def calcular_y_guardar_estado_resultados(anio, mes):
+    fecha_inicio = make_aware(datetime(anio, mes, 1))
+    fecha_fin = make_aware(datetime(anio, mes, monthrange(anio, mes)[1], 23, 59, 59))
+
+    cxp_qs = CuentaPorPagar.objects.filter(fecha__range=(fecha_inicio, fecha_fin))
+    cxc_qs = CuentaPorCobrar.objects.filter(fecha__range=(fecha_inicio, fecha_fin))
+
+    def sumar_por_concepto(queryset, modelo_concepto):
+        resultado = {}
+        for concepto in modelo_concepto.objects.all():
+            total = queryset.filter(conceptoFijo=concepto).aggregate(suma=Sum('val_bruto'))['suma'] or 0
+            resultado[concepto.nombre] = float(total)
+        return resultado
+
+    ingresos_detalle = sumar_por_concepto(cxc_qs, ConceptoCXC)
+    ingresos_total = sum(ingresos_detalle.values())
+
+    costos_op = ["nomina", "servicios", "otrosOperativos"]
+    costos_operacion_detalle = {
+        k: float(cxp_qs.filter(conceptoFijo__nombre=k).aggregate(suma=Sum('val_bruto'))['suma'] or 0)
+        for k in costos_op
+    }
+    costos_operacion_total = sum(costos_operacion_detalle.values())
+    utilidad_bruta = ingresos_total - costos_operacion_total
+
+    admon = ["honorariosADMON", "honorariosCONT", "segSocial", "otrosADMON"]
+    gastos_admon_detalle = {
+        k: float(cxp_qs.filter(conceptoFijo__nombre=k).aggregate(suma=Sum('val_bruto'))['suma'] or 0)
+        for k in admon
+    }
+    gastos_admon_total = sum(gastos_admon_detalle.values())
+    utilidad_operacional = utilidad_bruta - gastos_admon_total
+
+    otros_costos_detalle = {
+        "gastosBancarios": float(cxp_qs.filter(conceptoFijo__nombre="gastosBancarios").aggregate(suma=Sum('val_bruto'))['suma'] or 0)
+    }
+    otros_costos_total = sum(otros_costos_detalle.values())
+    utilidad_antes_impuestos = utilidad_operacional - otros_costos_total
+
+    impuestos_detalle = {
+        "impuestos": float(cxc_qs.filter(conceptoFijo__nombre="impuestos").aggregate(suma=Sum('val_bruto'))['suma'] or 0)
+    }
+    gastos_impuestos = sum(impuestos_detalle.values())
+    utilidad_neta = utilidad_antes_impuestos - gastos_impuestos
+
+    estado, _ = EstadoResultadosMensual.objects.update_or_create(
+        anio=anio,
+        mes=mes,
+        defaults={
+            "ingresos_total": ingresos_total,
+            "ingresos_detalle": ingresos_detalle,
+            "costos_operacion_total": costos_operacion_total,
+            "costos_operacion_detalle": costos_operacion_detalle,
+            "utilidad_bruta": utilidad_bruta,
+            "gastos_administrativos_total": gastos_admon_total,
+            "gastos_administrativos_detalle": gastos_admon_detalle,
+            "utilidad_operacional": utilidad_operacional,
+            "otros_costos_total": otros_costos_total,
+            "otros_costos_detalle": otros_costos_detalle,
+            "utilidad_antes_impuestos": utilidad_antes_impuestos,
+            "gastos_impuestos": gastos_impuestos,
+            "impuestos_detalle": impuestos_detalle,
+            "utilidad_neta": utilidad_neta,
+        }
+    )
+    return estado

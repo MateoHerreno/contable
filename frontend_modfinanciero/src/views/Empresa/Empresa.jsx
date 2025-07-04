@@ -4,9 +4,9 @@ import EntityModal from '../../components/EntityModal';
 import FormGroup from '../../components/FormGroup';
 import AlertAutoHide from '../../components/AlertAutoHide';
 import { getEmpresas, createEmpresa, updateEmpresa, deleteEmpresa } from '../../services/empresaService';
-import { handleApiError } from '../../services/handleApiError';
-import { limpiarPayload } from '../../services/limpiarPayload';
-import { api } from '../../services/connection';
+import { handleApiError } from '../../utils/handleApiError';
+import { limpiarPayload } from '../../utils/limpiarPayload';
+import { api } from '../../utils/connection';
 import { Button } from 'react-bootstrap';
 import { BsPencilFill, BsTrashFill } from 'react-icons/bs';
 

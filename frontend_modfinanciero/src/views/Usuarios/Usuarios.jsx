@@ -2,8 +2,8 @@ import DataTable from 'react-data-table-component';
 import React, { useEffect, useState } from 'react';
 import { getUsuarios, createUsuario, updateUsuario, deleteUsuario } from '../../services/usuarioService';
 import { getTiendas } from '../../services/tiendaService';
-import { limpiarPayload } from '../../services/limpiarPayload';
-import { handleApiError } from '../../services/handleApiError';
+import { limpiarPayload } from '../../utils/limpiarPayload';
+import { handleApiError } from '../../utils/handleApiError';
 import EntityModal from '../../components/EntityModal';
 import FormGroup from '../../components/FormGroup';
 import AlertAutoHide from '../../components/AlertAutoHide';
@@ -33,7 +33,12 @@ const Usuarios = () => {
     };
 
     const columns = [
-        { name: 'Nombre', selector: row => row.nombre, sortable: true },
+        {
+    name: 'Activo',
+    selector: row => row.is_active ? 'Sí' : 'No',
+    sortable: true,
+  },
+  { name: 'Nombre', selector: row => row.nombre, sortable: true },
         { name: 'Email', selector: row => row.email },
         { name: 'Teléfono', selector: row => row.telefono },
         { name: 'Rol', selector: row => ROLES_LABELS[row.rol] || row.rol },
@@ -202,12 +207,28 @@ const Usuarios = () => {
                         <option key={t.id} value={t.id}>{t.nombre}</option>
                     ))}
                 </FormGroup>
-                <FormGroup label="Rol" name="rol" value={form.rol} onChange={handleChange} as="select" required>
-                    <option value="">— Seleccionar rol —</option>
-                    {rolOptions.map((r) => (
-                        <option key={r.value} value={r.value}>{r.label}</option>
-                    ))}
-                </FormGroup>
+                
+<FormGroup label="Rol" name="rol" value={form.rol} onChange={handleChange} as="select" required>
+  <option value="">— Seleccionar rol —</option>
+  {rolOptions.map((r) => (
+    <option key={r.value} value={r.value}>{r.label}</option>
+  ))}
+</FormGroup>
+
+{/* ✅ Switch para activar o desactivar */}
+<div className="mb-3 form-check form-switch">
+  <input
+    className="form-check-input"
+    type="checkbox"
+    id="is_active"
+    checked={form.is_active}
+    onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
+  />
+  <label className="form-check-label" htmlFor="is_active">
+    Usuario activo
+  </label>
+</div>
+
             </EntityModal>
         </div>
     );

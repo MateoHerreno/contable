@@ -5,15 +5,17 @@ import {
   createCuentaPorPagar,
   updateCuentaPorPagar,
   deleteCuentaPorPagar,
-  getConceptosCXP
+  getConceptosCXP,
+  postExportarCXPpdf,
+  postExportarCXPexcel,
 } from '../../services/cuentasPorPagarService';
 import { getProveedores } from '../../services/proveedorService';
-import { limpiarPayload } from '../../services/limpiarPayload';
-import { handleApiError } from '../../services/handleApiError';
+import { limpiarPayload } from '../../utils/limpiarPayload';
+import { handleApiError } from '../../utils/handleApiError';
 import EntityModal from '../../components/EntityModal';
 import FormGroup from '../../components/FormGroup';
 import AlertAutoHide from '../../components/AlertAutoHide';
-import { Button } from 'react-bootstrap';
+import { Button, Modal, Form } from 'react-bootstrap';
 import { BsPencilFill, BsTrashFill } from 'react-icons/bs';
 
 const CuentasPorPagar = () => {
@@ -32,6 +34,8 @@ const CuentasPorPagar = () => {
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportData, setExportData] = useState({ proveedor: '', fecha_inicio: '', fecha_fin: '' });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,8 +45,8 @@ const CuentasPorPagar = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = limpiarPayload(form);
-    payload.val_bruto = parseFloat(form.val_bruto.replace(/\\./g, '').replace(',', '.'));
-    payload.abonos = parseFloat(form.abonos.replace(/\\./g, '').replace(',', '.'));
+    payload.val_bruto = parseFloat(form.val_bruto.replace(/\./g, '').replace(',', '.'));
+    payload.abonos = parseFloat(form.abonos.replace(/\./g, '').replace(',', '.'));
 
     if (payload.val_bruto < 0) {
       setError('El valor bruto no puede ser negativo.');
@@ -147,6 +151,58 @@ const CuentasPorPagar = () => {
     }
   ];
 
+  const handleExportChange = (e) => {
+    const { name, value } = e.target;
+    setExportData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const exportar = async (tipo) => {
+  // ✅ Validar fechas no vacías
+  if (!exportData.fecha_inicio || !exportData.fecha_fin) {
+    setError('Debes seleccionar una fecha de inicio y fin para exportar.');
+    return;
+  }
+
+  // ✅ Validar formato YYYY-MM-DD
+  const isValidDate = (str) => /^\d{4}-\d{2}-\d{2}$/.test(str);
+  if (!isValidDate(exportData.fecha_inicio) || !isValidDate(exportData.fecha_fin)) {
+    setError('Formato de fecha inválido. Usa YYYY-MM-DD.');
+    return;
+  }
+
+  // ✅ Validar orden lógico
+  const inicio = new Date(exportData.fecha_inicio);
+  const fin = new Date(exportData.fecha_fin);
+  if (inicio > fin) {
+    setError('La fecha de inicio no puede ser posterior a la fecha de fin.');
+    return;
+  }
+
+  const payload = {
+    fecha_inicio: exportData.fecha_inicio,
+    fecha_fin: exportData.fecha_fin,
+  };
+  if (exportData.proveedor) {
+    payload.proveedor = exportData.proveedor;
+  }
+
+  try {
+    const res = await (tipo === 'pdf'
+      ? postExportarCXPpdf(payload)
+      : postExportarCXPexcel(payload));
+    const blob = new Blob([res.data]);
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `cuentas_pagar_export.${tipo === 'pdf' ? 'pdf' : 'xlsx'}`);
+    document.body.appendChild(link);
+    link.click();
+    setShowExportModal(false);
+  } catch (err) {
+    handleApiError(err, setError);
+  }
+};
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -155,6 +211,7 @@ const CuentasPorPagar = () => {
     <div className="container mt-4">
       <div className="d-flex justify-content-end mb-3">
         <Button variant="primary" onClick={() => openModal()}>Crear Cuenta</Button>
+        <Button variant="success" className="me-2" onClick={() => setShowExportModal(true)}>Exportar PDF/Excel</Button>
       </div>
 
       <AlertAutoHide message={error} />
@@ -181,6 +238,36 @@ const CuentasPorPagar = () => {
         <FormGroup label="Valor Bruto" name="val_bruto" value={form.val_bruto} onChange={handleChange} required />
         <FormGroup label="Abonos" name="abonos" value={form.abonos} onChange={handleChange} />
       </EntityModal>
+
+      <Modal show={showExportModal} onHide={() => setShowExportModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Exportar Cuentas por Pagar</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group className="mb-3">
+            <Form.Label>Proveedor (opcional)</Form.Label>
+            <Form.Select name="proveedor" value={exportData.proveedor} onChange={handleExportChange}>
+              <option value="">Todos</option>
+              {proveedores.map(p => (
+                <option key={p.id} value={p.id}>{p.nombre}</option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Fecha Inicio</Form.Label>
+            <Form.Control type="date" name="fecha_inicio" value={exportData.fecha_inicio} onChange={handleExportChange} required />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Fecha Fin</Form.Label>
+            <Form.Control type="date" name="fecha_fin" value={exportData.fecha_fin} onChange={handleExportChange} required />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowExportModal(false)}>Cancelar</Button>
+          <Button variant="success" onClick={() => exportar('excel')}>Exportar Excel</Button>
+          <Button variant="danger" onClick={() => exportar('pdf')}>Exportar PDF</Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

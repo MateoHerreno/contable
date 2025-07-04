@@ -1,8 +1,8 @@
 import DataTable from 'react-data-table-component';
 import React, { useEffect, useState } from 'react';
 import { getProveedores, createProveedor, updateProveedor, deleteProveedor } from '../../services/proveedorService';
-import { limpiarPayload } from '../../services/limpiarPayload';
-import { handleApiError } from '../../services/handleApiError';
+import { limpiarPayload } from '../../utils/limpiarPayload';
+import { handleApiError } from '../../utils/handleApiError';
 import EntityModal from '../../components/EntityModal';
 import FormGroup from '../../components/FormGroup';
 import AlertAutoHide from '../../components/AlertAutoHide';

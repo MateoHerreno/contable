@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { logoutUser } from '../services/connection';
+import { logoutUser } from '../utils/connection';
 
 const Nav = () => {
   const rol = parseInt(localStorage.getItem('access_rol'), 10); // 1: admin, 2: gerente, 3: sprempleado, 4: empleado

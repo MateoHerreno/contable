@@ -46,6 +46,13 @@ urlpatterns = [
     path('api/excelcxpfecha/', ExportarExcelCxpPorFecha.as_view(), name='excelcxpfecha'),
     path('api/excelcxpclif/', ExportarExcelCxpPorProveedorYFecha.as_view(), name='excelcxpproveedorfecha'),
     path('api/excelestres/', ExportarExcelEstres.as_view(), name='excelestres'),
+    #url para pintar datos en dashboard
+    path('api/resumen/', DashboardResumenView.as_view()),
+    path('api/cxcconcepto/', CXCConceptosView.as_view()),
+    path('api/cxpconcepto/', CXPConceptosView.as_view()),
+    path('api/evolucionmensual/', EvolucionMensualView.as_view()),
+    path('api/cxcresumen/', CXCResumenView.as_view()),
+    path('api/cxpresumen/', CXPResumenView.as_view()),
 ]
 
 

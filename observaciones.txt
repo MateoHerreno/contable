@@ -1,21 +1,12 @@
--dentro de la creacion de cuentas deve existir el boton de realmente desea enviar
-la cxc y cxp? para hacer que el empleado obserbe bien los campos al enviarlos
-
--en la vista de cxc se deve poner un cuadro dinamico que muestre el valor todal de el iva el valor que se va a guardar
-
--en el front los formularios deveria poner comas automaticamente mientras se introducen los numeros
 
 admin@admin.com : 123456
 
--para las descargas de pdf de cxc y cxp, se deven manejar las agrupaciones de fechas desde el frontend hay dos endpoints por cada 
-    provedores-fecha, fecha todas
-    clientes-fecha, fecha todas
-
-para los permisos, secreo un archivo persmisos.json y zpermisos.txt con el json los permisos se cargan automaticamente al hacer migrate/ con el permisos.txt
-es lo que se pone ejecutando python manage.py sell (copiar todo el archivo pegarlo en la terminal precionar enter y luego escribir exit())
-
 gestionar el backup (aun no tengo)
  
+trabajar en el dashboard
+
+
 
 pip freeze > requirements.txt
 venv\Scripts\activate
+

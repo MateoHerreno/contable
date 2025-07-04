@@ -1,4 +1,4 @@
-import { api } from './connection';
+import { api } from '../utils/connection';
 
 export const getProveedores = () => api.get('proveedores/');
 export const getProveedor = (id) => api.get(`proveedores/${id}/`);

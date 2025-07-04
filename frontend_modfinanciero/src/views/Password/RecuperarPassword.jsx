@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import {api} from '../../services/connection';
+import {api} from '../../utils/connection';
 
 export default function RecuperarPassword() {
     const [email, setEmail] = useState('');

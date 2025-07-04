@@ -1,5 +1,5 @@
 
-import { api } from './connection';
+import { api } from '../utils/connection';
 
 export const getClientes = () => api.get('clientes/');
 export const getCliente = (id) => api.get(`clientes/${id}/`);

@@ -1,20 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import DataTable from 'react-data-table-component';
-import {
-  getCuentasPorCobrar,
-  createCuentaPorCobrar,
-  updateCuentaPorCobrar,
-  deleteCuentaPorCobrar,
-  getConceptosCXC
-} from '../../services/cuentasPorCobrarService';
+import { getCuentasPorCobrar, createCuentaPorCobrar, updateCuentaPorCobrar,
+        deleteCuentaPorCobrar, getConceptosCXC, postExportarCXCpdf, postExportarCXCexcel 
+      } from '../../services/cuentasPorCobrarService';
 import { getClientes } from '../../services/clienteService';
-import { limpiarPayload } from '../../services/limpiarPayload';
-import { handleApiError } from '../../services/handleApiError';
+import { limpiarPayload } from '../../utils/limpiarPayload';
+import { handleApiError } from '../../utils/handleApiError';
 import EntityModal from '../../components/EntityModal';
 import FormGroup from '../../components/FormGroup';
 import AlertAutoHide from '../../components/AlertAutoHide';
 import { Button, Modal } from 'react-bootstrap';
 import { BsPencilFill, BsTrashFill } from 'react-icons/bs';
+import { Form } from 'react-bootstrap';
 
 const CuentasPorCobrar = () => {
   const [registros, setRegistros] = useState([]);
@@ -208,15 +205,69 @@ const CuentasPorCobrar = () => {
       cell: row => (
         <div className="d-flex">
           <Button size="sm" variant="warning" className="me-2 d-flex align-items-center" onClick={() => openModal(row)}>
-            <BsPencilFill className="me-1" /> 
+            <BsPencilFill className="me-1" />
           </Button>
           <Button size="sm" variant="danger" onClick={() => handleDelete(row.n_cxc)}>
-            <BsTrashFill className="me-2 d-flex align-items-center" /> 
+            <BsTrashFill className="me-2 d-flex align-items-center" />
           </Button>
         </div>
       )
     }
   ];
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportData, setExportData] = useState({ cliente: '', fecha_inicio: '', fecha_fin: '' });
+
+  const handleExportChange = (e) => {
+    const { name, value } = e.target;
+    setExportData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const exportar = async (tipo) => {
+
+  const isValidDate = (str) => /^\d{4}-\d{2}-\d{2}$/.test(str);
+  if (!isValidDate(exportData.fecha_inicio) || !isValidDate(exportData.fecha_fin)) {
+    setError('Formato de fecha inválido. Usa YYYY-MM-DD.');
+    return;
+  }
+
+  const inicio = new Date(exportData.fecha_inicio);
+  const fin = new Date(exportData.fecha_fin);
+  if (inicio > fin) {
+    setError('La fecha de inicio no puede ser posterior a la fecha de fin.');
+    return;
+  }
+
+
+    if (!exportData.fecha_inicio || !exportData.fecha_fin) {
+      setError('Debes seleccionar una fecha de inicio y fin para exportar.');
+      return;
+    }
+
+    const payload = {
+      fecha_inicio: exportData.fecha_inicio,
+      fecha_fin: exportData.fecha_fin,
+    };
+    if (exportData.cliente) {
+      payload.cliente = exportData.cliente;
+    }
+
+    try {
+      const res = await (tipo === 'pdf'
+        ? postExportarCXCpdf(payload)
+        : postExportarCXCexcel(payload));
+      const blob = new Blob([res.data]);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `cuentas_cobrar_export.${tipo === 'pdf' ? 'pdf' : 'xlsx'}`);
+      document.body.appendChild(link);
+      link.click();
+      setShowExportModal(false);
+    } catch (err) {
+      handleApiError(err, setError);
+    }
+  };
+  
 
   useEffect(() => {
     fetchData();
@@ -226,6 +277,8 @@ const CuentasPorCobrar = () => {
     <div className="container mt-4">
       <div className="d-flex justify-content-end mb-3">
         <Button variant="primary" onClick={() => openModal()}>Crear Cuenta</Button>
+        <Button variant="success" className="me-2" onClick={() => setShowExportModal(true)}>Exportar PDF/Excel</Button>
+
       </div>
 
       <AlertAutoHide message={error} />
@@ -294,8 +347,41 @@ const CuentasPorCobrar = () => {
           )}
         </Modal.Body>
       </Modal>
+
+      <Modal show={showExportModal} onHide={() => setShowExportModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Exportar Cuentas por Cobrar</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group className="mb-3">
+            <Form.Label>Cliente (opcional)</Form.Label>
+            <Form.Select name="cliente" value={exportData.cliente} onChange={handleExportChange}>
+              <option value="">Todos</option>
+              {clientes.map(c => (
+                <option key={c.id} value={c.id}>{c.nombre}</option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Fecha Inicio</Form.Label>
+            <Form.Control type="date" name="fecha_inicio" value={exportData.fecha_inicio} onChange={handleExportChange} required />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Fecha Fin</Form.Label>
+            <Form.Control type="date" name="fecha_fin" value={exportData.fecha_fin} onChange={handleExportChange} required />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowExportModal(false)}>Cancelar</Button>
+          <Button variant="success" onClick={() => exportar('excel')}>Exportar Excel</Button>
+          <Button variant="danger" onClick={() => exportar('pdf')}>Exportar PDF</Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
 
 export default CuentasPorCobrar;
+
+
+

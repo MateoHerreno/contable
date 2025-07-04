@@ -5,12 +5,14 @@ from rest_framework.response import Response
 from rest_framework import viewsets,status
 from rest_framework.views import APIView
 from rest_framework import permissions
+from django.http import FileResponse,HttpResponse
 from django.utils.timezone import make_aware
+from django.utils.timezone import now
+from django.db.models import Sum, F
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from django.http import FileResponse,HttpResponse
 from calendar import monthrange
 from datetime import datetime
 from io import BytesIO
@@ -18,8 +20,6 @@ from .serializers import *
 from .permissions import*
 from .models import*
 from .utils import *
-
-
 
 
 #desde aca es donde sale la documentacion de swagger   
@@ -196,6 +196,8 @@ class NotaCreditoViewSet(viewsets.ModelViewSet):
             return [TienePermiso('delete_notacredito')()]
         return [TienePermiso('read_notacredito')()]
 
+
+#views de recuperacion de contraseña
 class PasswordReset(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
@@ -221,6 +223,7 @@ class SolicitudRecuperacion(APIView):
         enviar_email_recuperacion(usuario.email, token)
         return Response({'mensaje': 'Token de recuperación enviado a tu email.'}, status=status.HTTP_200_OK)
 
+#views de exportacion de pdf y exel y el estres
 class ExportarCxcPorFecha(APIView):
     permission_classes = [IsAuthenticated, TienePermiso('exportar_cxc_fecha')]
     def post(self, request):
@@ -308,7 +311,7 @@ class ExportarCxpPorProveedorYFecha(APIView):
 class EstadoResultados(APIView):
     permission_classes = [IsAuthenticated, TienePermiso('ver_estres')]
 
-    def get(self, request):
+    def post(self, request):
         hoy = datetime.now().date()
         anio = request.query_params.get('anio')
         mes = request.query_params.get('mes')
@@ -442,14 +445,16 @@ class ExportarEstresFecha(APIView):
             return Response({'error': 'Debe enviar "anio" y "mes".'}, status=400)
 
         try:
-            estado = EstadoResultadosMensual.objects.get(anio=anio, mes=mes)
-        except EstadoResultadosMensual.DoesNotExist:
-            return Response({'error': 'No se encontró estado de resultados para ese periodo.'}, status=404)
+            anio = int(anio)
+            mes = int(mes)
+            estado = calcular_y_guardar_estado_resultados(anio, mes)
+        except Exception as e:
+            return Response({'error': f'Error al calcular el estado: {str(e)}'}, status=500)
 
-        return generar_pdf_estres(estado, anio, mes)
+        return generar_pdf_estres(anio, mes)
 
 class ExportarExcelCxcPorFecha(APIView):
-    permission_classes = [IsAuthenticated, TienePermiso('exportar_excel_cxc_fecha')()]
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_excel_cxc_fecha')]
     def post(self, request):
         fecha_inicio = request.data.get('fecha_inicio')
         fecha_fin = request.data.get('fecha_fin')
@@ -467,7 +472,7 @@ class ExportarExcelCxcPorFecha(APIView):
         return response
 
 class ExportarExcelCxcPorClienteYFecha(APIView):
-    permission_classes = [IsAuthenticated, TienePermiso('exportar_excel_cxc_cliente_fecha')()]
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_excel_cxc_cliente_fecha')]
     def post(self, request):
         cliente_id = request.data.get('cliente')
         fecha_inicio = request.data.get('fecha_inicio')
@@ -490,7 +495,7 @@ class ExportarExcelCxcPorClienteYFecha(APIView):
         return response
 
 class ExportarExcelCxpPorFecha(APIView):
-    permission_classes = [IsAuthenticated, TienePermiso('exportar_excel_cxp_fecha')()]
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_excel_cxp_fecha')]
     def post(self, request):
         fecha_inicio = request.data.get('fecha_inicio')
         fecha_fin = request.data.get('fecha_fin')
@@ -508,7 +513,7 @@ class ExportarExcelCxpPorFecha(APIView):
         return response
 
 class ExportarExcelCxpPorProveedorYFecha(APIView):
-    permission_classes = [IsAuthenticated, TienePermiso('exportar_excel_cxp_proveedor_fecha')()]
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_excel_cxp_proveedor_fecha')]
     def post(self, request):
         proveedor_id = request.data.get('proveedor')
         fecha_inicio = request.data.get('fecha_inicio')
@@ -531,7 +536,8 @@ class ExportarExcelCxpPorProveedorYFecha(APIView):
         return response
 
 class ExportarExcelEstres(APIView):
-    permission_classes = [IsAuthenticated, TienePermiso('exportar_excel_estres')()]
+    permission_classes = [IsAuthenticated, TienePermiso('exportar_excel_estres')]
+
     def post(self, request):
         anio = request.data.get('anio')
         mes = request.data.get('mes')
@@ -540,9 +546,11 @@ class ExportarExcelEstres(APIView):
             return Response({'error': 'Debe enviar anio y mes.'}, status=400)
 
         try:
-            instancia = EstadoResultadosMensual.objects.get(anio=anio, mes=mes)
-        except EstadoResultadosMensual.DoesNotExist:
-            return Response({'error': 'No se encontró estado de resultados para ese periodo.'}, status=404)
+            anio = int(anio)
+            mes = int(mes)
+            instancia = calcular_y_guardar_estado_resultados(anio, mes)
+        except Exception as e:
+            return Response({'error': f'Error al calcular el estado: {str(e)}'}, status=500)
 
         excel_file = generar_excel_estres(instancia)
         response = HttpResponse(excel_file, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -551,3 +559,108 @@ class ExportarExcelEstres(APIView):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
+# views para el dashboard 7 enpoins que devuelven datos utiles
+# 1. Resumen general
+class DashboardResumenView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        hoy = now()
+        anio = hoy.year
+        mes = hoy.month
+
+        ingresos = CuentaPorCobrar.objects.filter(fecha__year=anio, fecha__month=mes).aggregate(total=Sum('val_bruto'))['total'] or 0
+        egresos = CuentaPorPagar.objects.filter(fecha__year=anio, fecha__month=mes).aggregate(total=Sum('val_bruto'))['total'] or 0
+        utilidad = EstadoResultadosMensual.objects.filter(anio=anio, mes=mes).first()
+        utilidad_neta = utilidad.utilidad_neta if utilidad else ingresos - egresos
+
+        return Response({
+            'ingresos': ingresos,
+            'egresos': egresos,
+            'utilidad_neta': utilidad_neta
+        })
+
+# 2. CxC por concepto (solo mes actual)
+class CXCConceptosView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        hoy = now()
+        anio = hoy.year
+        mes = hoy.month
+
+        datos = (CuentaPorCobrar.objects
+                 .filter(fecha__year=anio, fecha__month=mes)
+                 .values('conceptoFijo__nombre')
+                 .annotate(total=Sum('val_bruto'))
+                 .order_by('conceptoFijo__nombre'))
+        return Response(datos)
+
+# 3. CxP por concepto (solo mes actual)
+class CXPConceptosView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        hoy = now()
+        anio = hoy.year
+        mes = hoy.month
+
+        datos = (CuentaPorPagar.objects
+                 .filter(fecha__year=anio, fecha__month=mes)
+                 .values('conceptoFijo__nombre')
+                 .annotate(total=Sum('val_bruto'))
+                 .order_by('conceptoFijo__nombre'))
+        return Response(datos)
+
+# 4. Evolución mensual (mantiene todo el año, agrupado por mes)
+class EvolucionMensualView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        hoy = now()
+        anio = hoy.year
+
+        cxc = (CuentaPorCobrar.objects
+               .filter(fecha__year=anio)
+               .values('fecha__month')
+               .annotate(total=Sum('val_bruto'))
+               .order_by('fecha__month'))
+
+        cxp = (CuentaPorPagar.objects
+               .filter(fecha__year=anio)
+               .values('fecha__month')
+               .annotate(total=Sum('val_bruto'))
+               .order_by('fecha__month'))
+
+        return Response({'cxc': list(cxc), 'cxp': list(cxp)})
+
+# 5. CxC: recaudado vs pendiente (solo mes actual)
+class CXCResumenView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        hoy = now()
+        anio = hoy.year
+        mes = hoy.month
+
+        queryset = CuentaPorCobrar.objects.filter(fecha__year=anio, fecha__month=mes)
+        recaudado = queryset.filter(neto_facturado__lte=F('abonos')).aggregate(suma=Sum('neto_facturado'))['suma'] or 0
+        total = queryset.aggregate(suma=Sum('neto_facturado'))['suma'] or 0
+        pendiente = total - recaudado
+        return Response({'recaudado': recaudado, 'pendiente': pendiente})
+
+# 6. CxP: pagado vs pendiente (solo mes actual)
+class CXPResumenView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        hoy = now()
+        anio = hoy.year
+        mes = hoy.month
+
+        queryset = CuentaPorPagar.objects.filter(fecha__year=anio, fecha__month=mes)
+        pagado = queryset.filter(val_bruto__lte=F('abonos')).aggregate(suma=Sum('val_bruto'))['suma'] or 0
+        total = queryset.aggregate(suma=Sum('val_bruto'))['suma'] or 0
+        pendiente = total - pagado
+        return Response({'pagado': pagado, 'pendiente': pendiente})

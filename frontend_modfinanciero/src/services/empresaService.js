@@ -1,4 +1,4 @@
-import {api} from './connection'
+import { api } from '../utils/connection';
 
 export const getEmpresas = () => api.get('empresas/');
 export const createEmpresa = (data) => api.post('empresas/', data);

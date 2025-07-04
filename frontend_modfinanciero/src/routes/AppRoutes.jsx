@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-
+import { intentarRenovarToken } from '../utils/refreshToken';
+import { useEffect } from 'react';
 // Vistas
 import Login from '../views/Login/Login';
 import RecuperarPassword from '../views/Password/RecuperarPassword';
@@ -19,7 +20,16 @@ import EstadoResultados from '../views/EstadoResultados/EstadoResultados';
 // Layout protegido
 import ProtectedLayout from '../components/ProtectedLayout';
 
+
 export default function AppRoutes() {
+  //este trozo de codigo mantiene la secion abierta mientras el token refres sea valido 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      intentarRenovarToken();
+    }, 4 * 60 * 1000); // cada 4 minutos
+    return () => clearInterval(interval);
+  }, []);
+  
   return (
     <Routes>
       {/* Redirección por defecto */}

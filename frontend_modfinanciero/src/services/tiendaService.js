@@ -1,4 +1,4 @@
-import {api} from '../services/connection';
+import { api } from '../utils/connection';
 
 export const getTiendas = () => api.get('tiendas/');
 export const createTienda = (data) => api.post('tiendas/', data);

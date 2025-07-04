@@ -1,23 +1,23 @@
 import axios from 'axios';
 
-//  Centralizar la URL base de la API
+// 🔗 URL base centralizada
 export const API_BASE_URL = 'http://localhost:8000/api/';
 
-//  Función para cerrar sesión local
+// 🚪 Función para cerrar sesión
 export const logoutUser = () => {
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');
   localStorage.removeItem('access_nombre');
   localStorage.removeItem('access_rol');
-  window.location.href = '/logout';
+  window.location.href = '/login';
 };
 
-//  Instancia principal con token de acceso
+// 🔐 Instancia principal autenticada
 export const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
-//  Interceptor para agregar token en cada solicitud
+// 🎫 Agregar token a cada solicitud si existe
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token');
   if (token) {
@@ -26,16 +26,19 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-//  Instancia separada sin interceptores para el refresh
+// ♻️ Instancia limpia para refresh sin interceptores
 const refreshInstance = axios.create({ baseURL: API_BASE_URL });
 
 // 🧩 Interceptor de respuesta para manejar expiración del access_token
 api.interceptors.response.use(
-  response => response,
-  async error => {
+  (response) => response,
+  async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry
+    ) {
       originalRequest._retry = true;
 
       const refreshToken = localStorage.getItem('refresh_token');
@@ -49,12 +52,12 @@ api.interceptors.response.use(
           localStorage.setItem('access_token', newAccessToken);
 
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          return api(originalRequest); // reintenta con nuevo token
+          return api(originalRequest); // reintenta petición original
         } catch (refreshError) {
           logoutUser(); // refresh también falló
         }
       } else {
-        logoutUser(); // sin refresh disponible
+        logoutUser(); // no hay refresh disponible
       }
     }
 

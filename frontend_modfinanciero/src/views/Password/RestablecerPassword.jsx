@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import {api} from '../../services/connection';
+import {api} from '../../utils/connection';
 
 export default function RestablecerPassword() {
     const [searchParams] = useSearchParams();

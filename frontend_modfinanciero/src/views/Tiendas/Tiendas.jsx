@@ -5,8 +5,8 @@ import FormGroup from '../../components/FormGroup';
 import AlertAutoHide from '../../components/AlertAutoHide';
 import { getTiendas, createTienda, updateTienda, deleteTienda } from '../../services/tiendaService';
 import { getEmpresas } from '../../services/empresaService';
-import { handleApiError } from '../../services/handleApiError';
-import { limpiarPayload } from '../../services/limpiarPayload';
+import { handleApiError } from '../../utils/handleApiError';
+import { limpiarPayload } from '../../utils/limpiarPayload';
 import { Button } from 'react-bootstrap';
 import { BsPencilFill, BsTrashFill } from 'react-icons/bs';
 

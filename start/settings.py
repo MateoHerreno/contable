@@ -138,7 +138,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 #configuracion por defecto de los tokens jwt
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=9),   #  minutos
-    'REFRESH_TOKEN_LIFETIME': timedelta(hours=2),     # horas
+    'REFRESH_TOKEN_LIFETIME': timedelta(hours=1),     # horas
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
 

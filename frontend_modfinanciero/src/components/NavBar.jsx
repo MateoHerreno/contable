@@ -15,7 +15,7 @@ const Nav = () => {
   return (
     <nav className="navbar navbar-expand-md navbar-light bg-light border-bottom px-3">
       <div className="container-fluid">
-        <Link to="/dashboard" className="navbar-brand" onClick={closeNavbar}>Inicio</Link>
+
 
         <button
           className="navbar-toggler"
@@ -30,6 +30,7 @@ const Nav = () => {
 
             {isAdminOrGerenteOrSP && (
               <>
+                <li className="nav-item"><Link to="/dashboard" className="nav-link" onClick={closeNavbar}>Inicio</Link></li>
                 <li className="nav-item"><Link to="/empresa" className="nav-link" onClick={closeNavbar}>Empresa</Link></li>
                 <li className="nav-item"><Link to="/tiendas" className="nav-link" onClick={closeNavbar}>Tiendas</Link></li>
                 <li className="nav-item"><Link to="/usuarios" className="nav-link" onClick={closeNavbar}>Usuarios</Link></li>

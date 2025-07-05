@@ -563,7 +563,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 # views para el dashboard 7 enpoins que devuelven datos utiles
 # 1. Resumen general
 class DashboardResumenView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, TienePermiso('ver_dashboard')]
 
     def get(self, request):
         hoy = now()
@@ -583,7 +583,7 @@ class DashboardResumenView(APIView):
 
 # 2. CxC por concepto (solo mes actual)
 class CXCConceptosView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, TienePermiso('ver_dashboard')]
 
     def get(self, request):
         hoy = now()
@@ -599,7 +599,7 @@ class CXCConceptosView(APIView):
 
 # 3. CxP por concepto (solo mes actual)
 class CXPConceptosView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, TienePermiso('ver_dashboard')]
 
     def get(self, request):
         hoy = now()
@@ -615,7 +615,7 @@ class CXPConceptosView(APIView):
 
 # 4. Evolución mensual (mantiene todo el año, agrupado por mes)
 class EvolucionMensualView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, TienePermiso('ver_dashboard')]
 
     def get(self, request):
         hoy = now()
@@ -637,7 +637,7 @@ class EvolucionMensualView(APIView):
 
 # 5. CxC: recaudado vs pendiente (solo mes actual)
 class CXCResumenView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, TienePermiso('ver_dashboard')]
 
     def get(self, request):
         hoy = now()
@@ -652,7 +652,7 @@ class CXCResumenView(APIView):
 
 # 6. CxP: pagado vs pendiente (solo mes actual)
 class CXPResumenView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, TienePermiso('ver_dashboard')]
 
     def get(self, request):
         hoy = now()

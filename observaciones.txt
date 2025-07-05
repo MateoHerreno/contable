@@ -1,12 +1,7 @@
-
+usuario de pueba admin
 admin@admin.com : 123456
+mateoherre@outlook.es   123456
 
-gestionar el backup (aun no tengo)
- 
-trabajar en el dashboard
-
-
-
-pip freeze > requirements.txt
-venv\Scripts\activate
-
+cambiar las credenciales de envio de correos apra recuperar
+cambiar la base de datos para despliegue
+gestionar el backup cipia de seg de bd

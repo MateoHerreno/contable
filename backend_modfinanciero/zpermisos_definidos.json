@@ -61,6 +61,8 @@
   { "accion": "exportar_excel_cxc_fecha", "admin": true, "gerente": true, "sprempleado": true, "empleado": false},
   { "accion": "exportar_excel_cxc_cliente_fecha", "admin": true, "gerente": true, "sprempleado": true, "empleado": false},
   { "accion": "exportar_excel_cxp_fecha", "admin": true, "gerente": true, "sprempleado": true, "empleado": false},
-  { "accion": "exportar_excel_cxp_proveedor_fecha", "admin": true, "gerente": true, "sprempleado": true, "empleado": false}
+  { "accion": "exportar_excel_cxp_proveedor_fecha", "admin": true, "gerente": true, "sprempleado": true, "empleado": false},
+  
+  { "accion": "ver_dashboard", "admin": true, "gerente": true, "sprempleado": true, "empleado": false}
   
 ]

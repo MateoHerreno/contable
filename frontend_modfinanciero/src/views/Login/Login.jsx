@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import {api} from '../../utils/connection';
+import { api } from '../../utils/connection';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -25,10 +25,11 @@ export default function Login() {
             localStorage.setItem('access_rol', response.data.rol);
             localStorage.setItem('access_nombre', response.data.nombre);
 
+            const rol = parseInt(response.data.rol, 10);
             setError(null);
-            navigate('/dashboard');
+            navigate(rol === 4 ? '/CuentasPorCobrar' : '/dashboard');
         } catch (err) {
-            setError('Error al iniciar session; revise los datos de inicio o su coneccion.');
+            setError('Error al iniciar sesión; revise los datos de inicio o su conexión.');
         }
     };
 
@@ -77,7 +78,7 @@ export default function Login() {
                 </div>
             </div>
 
-              <Footer />
+            <Footer />
         </div>
     );
 }

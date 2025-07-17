@@ -118,6 +118,18 @@ class ProveedorViewSet(viewsets.ModelViewSet):
             return [TienePermiso('delete_proveedor')()]
         return [TienePermiso('read_proveedor')()]
 
+    def list(self, request, *args, **kwargs):
+        # Recalcular saldos de todos los proveedores antes de devolver la lista
+        for proveedor_id in Proveedor.objects.values_list('id', flat=True):
+            recalcular_saldos_proveedor(proveedor_id)  
+        return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        # Recalcular saldo de este proveedor antes de devolverlo
+        proveedor = self.get_object()
+        recalcular_saldos_proveedor(proveedor.id)  
+        return super().retrieve(request, *args, **kwargs)
+
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.all()
     serializer_class = ClienteSerializer
@@ -131,6 +143,18 @@ class ClienteViewSet(viewsets.ModelViewSet):
             return [TienePermiso('delete_cliente')()]
         return [TienePermiso('read_cliente')()]
 
+    def list(self, request, *args, **kwargs):
+        # Recalcular saldos de todos los clientes antes de devolver la lista
+        for cliente_id in Cliente.objects.values_list('id', flat=True):
+            recalcular_saldos_cliente(cliente_id)  
+        return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        # Recalcular saldo de este cliente antes de devolverlo
+        cliente = self.get_object()
+        recalcular_saldos_cliente(cliente.id)  
+        return super().retrieve(request, *args, **kwargs)
+    
 class ConceptoCXPViewSet(viewsets.ModelViewSet):
     queryset = ConceptoCXP.objects.all()
     serializer_class = ConceptoCXPSerializer
@@ -156,6 +180,7 @@ class ConceptoCXCViewSet(viewsets.ModelViewSet):
         elif self.action == 'destroy':
             return [TienePermiso('delete_conceptocxc')()]
         return [TienePermiso('read_conceptocxc')()]
+
    
 class CuentaPorPagarViewSet(viewsets.ModelViewSet):
     queryset = CuentaPorPagar.objects.all()
@@ -169,6 +194,16 @@ class CuentaPorPagarViewSet(viewsets.ModelViewSet):
         elif self.action == 'destroy':
             return [TienePermiso('delete_cxp')()]
         return [TienePermiso('read_cxp')()]
+    
+    def destroy(self, request, *args, **kwargs):
+        # Guardamos el proveedor para recálculo tras borrar la CxP
+        instancia = self.get_object()
+        proveedor_id = instancia.proveedor_id
+        # Eliminamos
+        self.perform_destroy(instancia)
+        # Recalculamos saldos del proveedor
+        recalcular_saldos_proveedor(proveedor_id)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class CuentaPorCobrarViewSet(viewsets.ModelViewSet):
     queryset = CuentaPorCobrar.objects.all()
@@ -182,7 +217,17 @@ class CuentaPorCobrarViewSet(viewsets.ModelViewSet):
         elif self.action == 'destroy':
             return [TienePermiso('delete_cxc')()]
         return [TienePermiso('read_cxc')()]
-
+    
+    def destroy(self, request, *args, **kwargs):
+        # Guardamos el cliente para recálculo tras borrar
+        instancia = self.get_object()
+        cliente_id = instancia.cliente_id
+        # Eliminamos
+        self.perform_destroy(instancia)
+           # Recalculamos saldo del cliente
+        recalcular_saldos_cliente(cliente_id)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
 class NotaCreditoViewSet(viewsets.ModelViewSet):
     queryset = NotaCredito.objects.select_related('cuenta').all()
     serializer_class = NotaCreditoSerializer

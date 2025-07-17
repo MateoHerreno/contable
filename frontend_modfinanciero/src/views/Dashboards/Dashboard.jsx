@@ -9,7 +9,7 @@ import {
 } from '../../services/dashboardService';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer,
-  LineChart, Line, Cell
+  LineChart, Line
 } from 'recharts';
 
 const Dashboard = () => {

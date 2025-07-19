@@ -1,8 +1,15 @@
 
 from django.contrib import admin
-from .models import *
 from django.utils.html import mark_safe
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from .models import (
+    Perfil, Empresa, Tienda, Usuario,
+    Proveedor, Cliente,
+    ConceptoCXP, ConceptoCXC,
+    CuentaPorPagar, CuentaPorCobrar,
+    NotaCredito, EstadoResultadosMensual,
+    PermisoPersonalizado
+)
 
 # Configuración básica para hacer cruds en la base de datos desde superuser
 

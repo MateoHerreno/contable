@@ -113,15 +113,15 @@ const Clientes = () => {
     <div className="container mt-4">
       <div className="d-flex justify-content-end align-items-center mb-3">
 
-        <Button variant="primary" onClick={() => openModal(null)}>Crear Cliente</Button>
+        <Button className='bt-crear' variant="primary" onClick={() => openModal(null)}>Crear Cliente</Button>
       </div>
 
       <AlertAutoHide message={error} />
       <AlertAutoHide message={success} variant="success" />
 
-
+      
       <DataTable title="Clientes" columns={columns} data={clientes} pagination striped highlightOnHover />
-
+      
 
       <EntityModal
         show={showModal}

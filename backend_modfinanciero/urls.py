@@ -2,7 +2,19 @@ from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView,
 from django.urls import path,include
 from rest_framework import routers
 from .import views
-from .views import *
+from .views import (
+    PerfilViewSet, EmpresaViewSet, TiendaViewSet, UsuarioViewSet,
+    ProveedorViewSet, ClienteViewSet, ConceptoCXPViewSet,
+    ConceptoCXCViewSet, CuentaPorPagarViewSet, CuentaPorCobrarViewSet,
+    NotaCreditoViewSet, CustomTokenObtainPairView,
+    SolicitudRecuperacion, PasswordReset,
+    ExportarCxcPorFecha, ExportarCxpPorFecha, EstadoResultados,
+    ExportarCxcPorClienteYFecha, ExportarCxpPorProveedorYFecha,
+    ExportarEstresFecha, ExportarExcelCxcPorClienteYFecha,
+    ExportarExcelCxcPorFecha, ExportarExcelCxpPorFecha, ExportarExcelCxpPorProveedorYFecha,
+    ExportarExcelEstres, schema_view, CXCConceptosView,CXCResumenView,CXPConceptosView,
+    CXPResumenView, DashboardResumenView,EvolucionMensualView,
+)
 
 
 router = routers.DefaultRouter()

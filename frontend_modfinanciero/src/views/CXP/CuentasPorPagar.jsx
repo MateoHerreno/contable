@@ -210,8 +210,8 @@ const CuentasPorPagar = () => {
   return (
     <div className="container mt-4">
       <div className="d-flex justify-content-end mb-3">
-        <Button variant="primary" onClick={() => openModal()}>Crear Cuenta</Button>
-        <Button variant="success" className="me-2" onClick={() => setShowExportModal(true)}>Exportar PDF/Excel</Button>
+        <Button variant="primary" className="bt-crear" onClick={() => openModal()}>Crear Cuenta</Button>
+        <Button variant="success" className="bt-exp me-2" onClick={() => setShowExportModal(true)}>Exportar PDF/Excel</Button>
       </div>
 
       <AlertAutoHide message={error} />

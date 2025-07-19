@@ -13,7 +13,7 @@ const Nav = () => {
   const closeNavbar = () => setExpanded(false);
 
   return (
-    <nav className="navbar navbar-expand-md navbar-light bg-light border-bottom px-3">
+    <nav className="nav navbar navbar-expand-md navbar-light  border-bottom px-3">
       <div className="container-fluid">
 
 
@@ -48,7 +48,7 @@ const Nav = () => {
             )}
           </ul>
 
-          <div className="d-flex ms-auto">
+          <div className="button d-flex ms-auto">
             <button onClick={logoutUser} className="btn btn-sm btn-outline-danger">
               Cerrar sesión
             </button>

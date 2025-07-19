@@ -1,5 +1,5 @@
 from rest_framework.permissions import BasePermission
-from backend_modfinanciero.models import PermisoPersonalizado
+from .models import PermisoPersonalizado
 
 # Mapeo de número de rol al nombre usado en la tabla
 ROLES = {

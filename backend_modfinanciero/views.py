@@ -1,25 +1,79 @@
-
-from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
-from rest_framework import viewsets,status
 from rest_framework.views import APIView
-from rest_framework import permissions
-from django.http import FileResponse,HttpResponse
-from django.utils.timezone import make_aware
-from django.utils.timezone import now
+
+from django.http import FileResponse, HttpResponse
+from django.utils.timezone import make_aware, now
 from django.db.models import Sum, F
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+from django.db import transaction
+
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+
 from calendar import monthrange
 from datetime import datetime
 from io import BytesIO
-from .serializers import *
-from .permissions import*
-from .models import*
-from .utils import *
+
+
+from .models import (
+    Perfil,
+    Empresa,
+    Tienda,
+    Usuario,
+    Proveedor,
+    Cliente,
+    ConceptoCXP,
+    ConceptoCXC,
+    CuentaPorPagar,
+    CuentaPorCobrar,
+    NotaCredito,
+    EstadoResultadosMensual,
+)
+
+from .serializers import (
+    PerfilSerializer,
+    EmpresaSerializer,
+    TiendaSerializer,
+    UsuarioSerializer,
+    ProveedorSerializer,
+    ClienteSerializer,
+    ConceptoCXPSerializer,
+    ConceptoCXCSerializer,
+    CuentaPorPagarSerializer,
+    CuentaPorCobrarSerializer,
+    NotaCreditoSerializer,
+    PasswordResetSerializer,
+    CustomTokenObtainPairSerializer,
+    
+)
+
+from .permissions import (
+    TienePermiso,
+    NoEditarAdministradores, 
+    filtrar_queryset_por_rol,
+    )
+
+from .utils import (
+    recalcular_saldos_todos_clientes,
+    recalcular_saldos_cliente,
+    recalcular_saldos_todos_proveedores,
+    recalcular_saldos_proveedor,
+    generar_pdf_cxc,
+    generar_pdf_estres,
+    enviar_email_recuperacion,
+    generar_token,
+    generar_pdf_cxp,
+    generar_excel_cxp,
+    calcular_y_guardar_estado_resultados,
+    generar_excel_cxc,
+    generar_excel_estres
+)
+
 
 
 #desde aca es donde sale la documentacion de swagger   
@@ -105,31 +159,6 @@ class UsuarioViewSet(viewsets.ModelViewSet):
             ]
         return [TienePermiso('read_usuario')()]
 
-class ProveedorViewSet(viewsets.ModelViewSet):
-    queryset = Proveedor.objects.all()
-    serializer_class = ProveedorSerializer
-
-    def get_permissions(self):
-        if self.action == 'create':
-            return [TienePermiso('create_proveedor')()]
-        elif self.action in ['update', 'partial_update']:
-            return [TienePermiso('update_proveedor')()]
-        elif self.action == 'destroy':
-            return [TienePermiso('delete_proveedor')()]
-        return [TienePermiso('read_proveedor')()]
-
-    def list(self, request, *args, **kwargs):
-        # Recalcular saldos de todos los proveedores antes de devolver la lista
-        for proveedor_id in Proveedor.objects.values_list('id', flat=True):
-            recalcular_saldos_proveedor(proveedor_id)  
-        return super().list(request, *args, **kwargs)
-
-    def retrieve(self, request, *args, **kwargs):
-        # Recalcular saldo de este proveedor antes de devolverlo
-        proveedor = self.get_object()
-        recalcular_saldos_proveedor(proveedor.id)  
-        return super().retrieve(request, *args, **kwargs)
-
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = Cliente.objects.all()
     serializer_class = ClienteSerializer
@@ -144,16 +173,48 @@ class ClienteViewSet(viewsets.ModelViewSet):
         return [TienePermiso('read_cliente')()]
 
     def list(self, request, *args, **kwargs):
-        # Recalcular saldos de todos los clientes antes de devolver la lista
-        for cliente_id in Cliente.objects.values_list('id', flat=True):
-            recalcular_saldos_cliente(cliente_id)  
+        # Recálculo en batch: un solo bulk_update
+        recalcular_saldos_todos_clientes()  
         return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
-        # Recalcular saldo de este cliente antes de devolverlo
+        # 1. Obtenemos la instancia original
         cliente = self.get_object()
+        # 2. Recalculamos su saldo en BD
         recalcular_saldos_cliente(cliente.id)  
-        return super().retrieve(request, *args, **kwargs)
+        # 3. Forzamos refrescar del campo 'saldo' desde la BD
+        cliente.refresh_from_db(fields=['saldo'])
+        # 4. Serializamos y devolvemos ya con el saldo actualizado
+        serializer = self.get_serializer(cliente)
+        return Response(serializer.data)
+
+class ProveedorViewSet(viewsets.ModelViewSet):
+    queryset = Proveedor.objects.all()
+    serializer_class = ProveedorSerializer
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [TienePermiso('create_proveedor')()]
+        elif self.action in ['update', 'partial_update']:
+            return [TienePermiso('update_proveedor')()]
+        elif self.action == 'destroy':
+            return [TienePermiso('delete_proveedor')()]
+        return [TienePermiso('read_proveedor')()]
+
+    def list(self, request, *args, **kwargs):
+        recalcular_saldos_todos_proveedores()
+        return super().list(request, *args, **kwargs)
+    
+    def retrieve(self, request, *args, **kwargs):
+        # 1. Obtenemos la instancia
+        proveedor = self.get_object()
+        # 2. Recalculamos su saldo en BD  
+        recalcular_saldos_proveedor(proveedor.id)  
+        # 3. Forzamos refrescar solo el campo 'saldo'  
+        proveedor.refresh_from_db(fields=['saldo'])
+        # 4. Serializamos y devolvemos con el saldo actualizado
+        serializer = self.get_serializer(proveedor)
+        return Response(serializer.data)
     
 class ConceptoCXPViewSet(viewsets.ModelViewSet):
     queryset = ConceptoCXP.objects.all()
@@ -181,7 +242,6 @@ class ConceptoCXCViewSet(viewsets.ModelViewSet):
             return [TienePermiso('delete_conceptocxc')()]
         return [TienePermiso('read_conceptocxc')()]
 
-   
 class CuentaPorPagarViewSet(viewsets.ModelViewSet):
     queryset = CuentaPorPagar.objects.all()
     serializer_class = CuentaPorPagarSerializer
@@ -195,14 +255,14 @@ class CuentaPorPagarViewSet(viewsets.ModelViewSet):
             return [TienePermiso('delete_cxp')()]
         return [TienePermiso('read_cxp')()]
     
+    @transaction.atomic
     def destroy(self, request, *args, **kwargs):
         # Guardamos el proveedor para recálculo tras borrar la CxP
         instancia = self.get_object()
-        proveedor_id = instancia.proveedor_id
-        # Eliminamos
+        # bloquea el proveedor antes de eliminar
+        Proveedor.objects.select_for_update().get(pk=instancia.proveedor_id)
         self.perform_destroy(instancia)
-        # Recalculamos saldos del proveedor
-        recalcular_saldos_proveedor(proveedor_id)
+        recalcular_saldos_proveedor(instancia.proveedor_id)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class CuentaPorCobrarViewSet(viewsets.ModelViewSet):
@@ -218,14 +278,13 @@ class CuentaPorCobrarViewSet(viewsets.ModelViewSet):
             return [TienePermiso('delete_cxc')()]
         return [TienePermiso('read_cxc')()]
     
+    @transaction.atomic
     def destroy(self, request, *args, **kwargs):
         # Guardamos el cliente para recálculo tras borrar
         instancia = self.get_object()
-        cliente_id = instancia.cliente_id
-        # Eliminamos
+        Cliente.objects.select_for_update().get(pk=instancia.cliente_id)
         self.perform_destroy(instancia)
-           # Recalculamos saldo del cliente
-        recalcular_saldos_cliente(cliente_id)
+        recalcular_saldos_cliente(instancia.cliente_id)
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 class NotaCreditoViewSet(viewsets.ModelViewSet):
@@ -240,7 +299,6 @@ class NotaCreditoViewSet(viewsets.ModelViewSet):
         elif self.action == 'destroy':
             return [TienePermiso('delete_notacredito')()]
         return [TienePermiso('read_notacredito')()]
-
 
 #views de recuperacion de contraseña
 class PasswordReset(APIView):
@@ -358,26 +416,55 @@ class EstadoResultados(APIView):
 
     def post(self, request):
         hoy = datetime.now().date()
-        anio = request.query_params.get('anio')
-        mes = request.query_params.get('mes')
 
-        if anio and mes:
-            anio = int(anio)
-            mes = int(mes)
+        # 1) Leer año/mes de body JSON o de query params
+        anio = request.data.get('anio') or request.query_params.get('anio')
+        mes  = request.data.get('mes')  or request.query_params.get('mes')
+
+        # 2) Si vienen ambos, convertir a int; si no, buscar último mes disponible
+        if anio is not None and mes is not None:
+            try:
+                anio = int(anio)
+                mes  = int(mes)
+            except ValueError:
+                return Response(
+                    {"error": "Los valores de 'anio' y 'mes' deben ser enteros."},
+                    status=400
+                )
         else:
-            # Buscar la fecha más reciente entre CxC y CxP
-            ultima_fecha_cxc = CuentaPorCobrar.objects.order_by('-fecha').values_list('fecha', flat=True).first()
-            ultima_fecha_cxp = CuentaPorPagar.objects.order_by('-fecha').values_list('fecha', flat=True).first()
+            # buscar fecha más reciente entre CxC y CxP
+            ultima_cxc = CuentaPorCobrar.objects.order_by('-fecha') \
+                             .values_list('fecha', flat=True).first()
+            ultima_cxp = CuentaPorPagar.objects.order_by('-fecha') \
+                             .values_list('fecha', flat=True).first()
+            if not ultima_cxc and not ultima_cxp:
+                return Response(
+                    {"error": "No hay datos contables disponibles."},
+                    status=404
+                )
+            fechas = [f for f in (ultima_cxc, ultima_cxp) if f]
+            ultima = max(fechas)
+            anio = ultima.year
+            mes  = ultima.month
 
-            if not ultima_fecha_cxc and not ultima_fecha_cxp:
-                return Response({"error": "No hay datos contables disponibles."}, status=404)
+        # 3) VALIDACIÓN ADICIONAL: asegurarnos de que haya al menos un registro
+        tiene_cxc = CuentaPorCobrar.objects.filter(
+            fecha__year=anio, fecha__month=mes
+        ).exists()
+        tiene_cxp = CuentaPorPagar.objects.filter(
+            fecha__year=anio, fecha__month=mes
+        ).exists()
 
-            ultima_fecha = max(ultima_fecha_cxc or datetime.min, ultima_fecha_cxp or datetime.min)
-            anio = ultima_fecha.year
-            mes = ultima_fecha.month
+        if not tiene_cxc and not tiene_cxp:
+            return Response(
+                {"error": f"No existen registros de CxC ni CxP para {anio}-{mes:02d}."},
+                status=404
+            )
 
+        # 4) Si pasamos la validación, calculamos y devolvemos el estado de resultados
         instancia = self._calcular_estado(anio, mes)
-        return Response(self._formatear_salida(instancia))
+        resultado = self._formatear_salida(instancia)
+        return Response(resultado)
 
     def _calcular_estado(self, anio, mes):
         from .models import EstadoResultadosMensual

@@ -112,7 +112,7 @@ const Proveedores = () => {
   return (
     <div className="container mt-4">
       <div className="d-flex justify-content-end align-items-center mb-3">
-        <Button variant="primary" onClick={() => openModal(null)}>Crear Proveedor</Button>
+        <Button className='bt-crear' variant="primary" onClick={() => openModal(null)}>Crear Proveedor</Button>
       </div>
 
       <AlertAutoHide message={error} />

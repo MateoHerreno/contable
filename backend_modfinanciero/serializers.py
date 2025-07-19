@@ -1,10 +1,29 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
-from .models import *
+
 from decimal import Decimal, ROUND_HALF_UP
-from django.db.models import Sum
-from .utils import*
 from datetime import datetime
+
+from django.db.models import Sum
+
+from .models import (
+    Perfil,
+    Empresa,
+    Tienda,
+    Usuario,
+    Cliente,
+    Proveedor,
+    CuentaPorCobrar,
+    CuentaPorPagar,
+    NotaCredito,
+    ConceptoCXC,
+    ConceptoCXP
+)
+from .utils import (
+    format_decimal_humano,
+    recalcular_saldos_cliente,
+    recalcular_saldos_proveedor,
+)
 
 class PerfilSerializer(serializers.ModelSerializer):
     class Meta:
@@ -165,7 +184,7 @@ class ProveedorSerializer(serializers.ModelSerializer):
         return format_decimal_humano(obj.saldo)
 
 class ClienteSerializer(serializers.ModelSerializer):
-    saldo = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
+    saldo = serializers.SerializerMethodField()
     class Meta:
         model = Cliente
         fields = ['id', 'nombre', 'nit', 'telefono', 'saldo']
@@ -353,8 +372,7 @@ class CuentaPorPagarSerializer(serializers.ModelSerializer):
         return rep
 
     def create(self, validated_data):
-        from backend_modfinanciero.utils import recalcular_saldos_proveedor
-
+        
         proveedor = validated_data['proveedor']
         conceptoFijo = validated_data.get('conceptoFijo')
         val_bruto = validated_data.get('val_bruto', Decimal('0'))

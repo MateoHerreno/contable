@@ -119,7 +119,6 @@ REST_FRAMEWORK = {
 }
 """
 
-
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
@@ -148,3 +147,5 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',), # este es el prefijo antes de enviar el token key de acces
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
+
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')

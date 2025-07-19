@@ -1,0 +1,152 @@
+/*variables*/
+:root{
+  --negro:rgb(8, 8, 8);
+  --blanco:rgb(230, 230, 230);
+  --background:rgb(244, 236, 224);
+  --navbar:rgb(177, 177, 177);
+  --grisclaro:rgb(148, 145, 145);
+  --grisoscuro:rgb(65,59,59);
+  --btncrear:rgb(35, 49, 179);
+  --btnexp:rgb(179, 133, 35);
+
+}
+
+/*background tablas*/
+.background{
+  background-color: var(--background);
+}
+
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/*Header*/
+.header{
+    background-color: var(--negro)
+    
+}
+
+/*Barra de Navegación*/
+.nav{
+    background-color: var(--navbar);
+    
+}
+
+.nav-item{
+    transition: .5s;
+    border-radius: 10px;
+}
+.nav-item:hover{
+    background-color: var(--background);
+    
+}
+
+.button{
+    background-color: var(--blanco);
+    
+}
+
+/*Efectos campos input*/
+input, span, label,.texto >a{
+  display: block;
+}
+
+.form form {
+  position: relative;
+  
+}
+
+.form form input{
+  width: 100%;
+  background-color: transparent;
+  outline: none;
+  border: none;
+  border-bottom: 1px solid var(--grisclaro);
+  border-radius: none;
+  position: relative;
+  z-index: 10;
+  color: var(--blanco);
+  
+}
+
+.form form label{
+  position: absolute;
+  transform: translatex(-21.5rem);
+  transform: translatey(-1.8rem);
+  transition: transform .5s;
+  transform-origin: left;
+  z-index: 5;
+  color: var(--grisclaro)
+}
+
+
+
+.mb-5 > span{
+  position: absolute;
+  transform: translatex(-1.5rem);
+  transform: translatey(-2rem);
+  right: 0;
+  cursor: pointer;
+  font-size: 1rem;
+  z-index: 12;
+  color: var(--grisclaro);
+}
+
+/*Mover label hacia arriba al dar click*/
+.form form input:focus + label{
+  transform: translateY(-3rem) scale(.75);
+  color: var(--blanco);
+  transform-origin: left;
+  
+}
+
+/*dejar label arriba si hay un texto en el input*/
+.form form input:not(:placeholder-shown) + label{
+  transform: translateY(-3rem) scale(.75);
+  color: var(--blanco);
+  transform-origin: left;
+}
+
+
+.card{
+  background-color: var(--negro);
+  border-radius: 20px;
+}
+
+/*footer*/
+.footer{
+    background-color: var(--negro);
+}
+
+
+
+/*botones*/
+.bt-crear{
+    background-color:var(--btncrear);
+    color: var(--blanco);
+}
+
+.bt-exp{
+    background-color: var(--btnexp);
+    color: var(--blanco);
+}
+
+.bt-exp:hover{
+  background-color: rgb(170, 127, 35);
+}
+
+.logo{
+  margin-left: -32%;
+}

@@ -1,22 +1,34 @@
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.units import inch
-from reportlab.pdfgen import canvas
-from django.utils.timezone import make_aware
-from django.core.mail import send_mail
-from django.utils.timezone import now
-from django.http import FileResponse
-from django.db.models import Sum
-from django.db.models import *
-from calendar import monthrange
-from datetime import datetime
 from decimal import Decimal
 from io import BytesIO
-from .models import *
+from datetime import datetime
+from calendar import monthrange
 import openpyxl
 import secrets
 import pytz
-bogota_tz = pytz.timezone('America/Bogota')
 
+from django.db import transaction
+from django.db.models import Sum, OuterRef, Subquery
+from django.utils.timezone import make_aware, now
+from django.core.mail import send_mail
+from django.http import FileResponse
+from django.conf import settings
+
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+from reportlab.pdfgen import canvas
+
+from .models import (
+    Empresa,
+    Cliente,
+    Proveedor,
+    CuentaPorCobrar,
+    CuentaPorPagar,
+    EstadoResultadosMensual,
+    ConceptoCXC,
+    ConceptoCXP,
+    PermisoPersonalizado,
+)
+bogota_tz = pytz.timezone('America/Bogota')
 
 
 
@@ -27,6 +39,8 @@ def generar_token():
     return f"{token[:4]}-{token[4:]}" #parte el token con un guion
 
 def enviar_email_recuperacion(email, token):
+    frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')
+    
     asunto = "Recuperación de contraseña"
     mensaje = (
         f"Hola,\n\n"
@@ -35,7 +49,7 @@ def enviar_email_recuperacion(email, token):
         f"{token}\n\n"
         f"Utiliza este token para cambiar tu contraseña en la aplicación.\n\n"
         f"Tambien puedes ir a la url... \n\n"
-        f"http://localhost:3000/restablecer?email={email}&token={token}\n\n"
+        f"{frontend_url}/restablecer?email={email}&token={token}\n\n"
         f"¡Gracias!"
     )
     from_email = None  # usa el DEFAULT_FROM_EMAIL en "contable/contabilidad/contabilidad/setings.py"
@@ -53,31 +67,63 @@ def format_decimal_humano(value):
 # Actualizar saldos de clientes y proveedores que cargan en cxc y cxp
 
 def recalcular_saldos_proveedor(proveedor_id):
-    cuentas = CuentaPorPagar.objects.filter(proveedor_id=proveedor_id).order_by('fecha', 'n_cxp')
-    saldo_acumulado = Decimal('0')
-    cuenta_mas_reciente = None
-    for cuenta in cuentas:
-        cuenta.saldo_anterior = saldo_acumulado
-        cuenta.pendiente_por_pagar = cuenta.val_bruto + cuenta.saldo_anterior - cuenta.abonos
-        cuenta.save()
-        saldo_acumulado = cuenta.pendiente_por_pagar
-        cuenta_mas_reciente = cuenta
-    # Actualiza el saldo solo si hay al menos una cuenta
-    if cuenta_mas_reciente:
-        Proveedor.objects.filter(id=proveedor_id).update(saldo=cuenta_mas_reciente.pendiente_por_pagar)
-    else:
-        Proveedor.objects.filter(id=proveedor_id).update(saldo=Decimal('0'))
+    # Bloquea la fila del proveedor y recalcula en una sola transacción
+    with transaction.atomic():
+        proveedor = Proveedor.objects.select_for_update().get(pk=proveedor_id)
+        saldo_acumulado = Decimal('0')
+        cuentas = CuentaPorPagar.objects.filter(
+            proveedor_id=proveedor_id
+        ).order_by('fecha', 'n_cxp')
+        for c in cuentas:
+            c.saldo_anterior = saldo_acumulado
+            c.pendiente_por_pagar = c.val_bruto + saldo_acumulado - c.abonos
+            c.save()
+            saldo_acumulado = c.pendiente_por_pagar
+        proveedor.saldo = saldo_acumulado
+        proveedor.save(update_fields=['saldo'])
 
 def recalcular_saldos_cliente(cliente_id):
-    cuentas = CuentaPorCobrar.objects.filter(cliente_id=cliente_id).order_by('fecha', 'n_cxc')
-    saldo_acumulado = Decimal('0')
-    for cuenta in cuentas:
-        cuenta.saldo_anterior = saldo_acumulado
-        cuenta.pendiente_por_pagar = cuenta.neto_facturado + cuenta.saldo_anterior - cuenta.abonos
-        cuenta.save()
-        saldo_acumulado = cuenta.pendiente_por_pagar
-    # Actualizar saldo total del cliente
-    Cliente.objects.filter(id=cliente_id).update(saldo=saldo_acumulado)
+    # Bloquea la fila del cliente y recalcula en una sola transacción
+    with transaction.atomic():
+        cliente = Cliente.objects.select_for_update().get(pk=cliente_id)
+        saldo_acumulado = Decimal('0')
+        cuentas = CuentaPorCobrar.objects.filter(
+            cliente_id=cliente_id
+        ).order_by('fecha', 'n_cxc')
+        for c in cuentas:
+            c.saldo_anterior = saldo_acumulado
+            c.pendiente_por_pagar = c.neto_facturado + saldo_acumulado - c.abonos
+            c.save()
+            saldo_acumulado = c.pendiente_por_pagar
+        cliente.saldo = saldo_acumulado
+        cliente.save(update_fields=['saldo'])
+
+def recalcular_saldos_todos_clientes():
+    # Bloquea todas las filas de clientes antes del bulk_update
+    with transaction.atomic():
+        sub = CuentaPorCobrar.objects.filter(
+            cliente_id=OuterRef('pk')
+        ).order_by('-fecha', '-n_cxc')
+        qs = Cliente.objects.select_for_update().annotate(
+            ultimo_saldo=Subquery(sub.values('pendiente_por_pagar')[:1])
+        )
+        clientes = list(qs)
+        for c in clientes:
+            c.saldo = c.ultimo_saldo or Decimal('0')
+        Cliente.objects.bulk_update(clientes, ['saldo'])
+
+def recalcular_saldos_todos_proveedores():
+    with transaction.atomic():
+        sub = CuentaPorPagar.objects.filter(
+            proveedor_id=OuterRef('pk')
+        ).order_by('-fecha', '-n_cxp')
+        qs = Proveedor.objects.select_for_update().annotate(
+            ultimo_saldo=Subquery(sub.values('pendiente_por_pagar')[:1])
+        )
+        proveedores = list(qs)
+        for p in proveedores:
+            p.saldo = p.ultimo_saldo or Decimal('0')
+        Proveedor.objects.bulk_update(proveedores, ['saldo'])
 
 #funcion para exportacion de pdfs______________________________________________________________________________________
 #desde cxc filtrando por clientes y fechas (un cliente en un periodo especifico, o si no trae cliente solo la fecha especifica)
